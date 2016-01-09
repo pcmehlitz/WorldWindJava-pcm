@@ -1,2 +1,6 @@
 .DS_Store
 *.class
+.idea/
+target/
+worldwind.jar
+

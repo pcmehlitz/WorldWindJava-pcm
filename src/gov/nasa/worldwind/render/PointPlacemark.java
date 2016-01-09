@@ -1130,7 +1130,8 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected void drawLabel(DrawContext dc, PickSupport pickCandidates, OrderedPlacemark opm)
     {
-        if (this.getLabelText() == null)
+        String labelText = this.getLabelText();
+        if (labelText == null)
             return;
 
         Color color = this.getActiveAttributes().getLabelColor();
@@ -1196,9 +1197,9 @@ public class PointPlacemark extends WWObjectImpl
             {
                 textRenderer.begin3DRendering();
                 textRenderer.setColor(backgroundColor);
-                textRenderer.draw3D(this.getLabelText(), x + 1, y - 1, 0, 1);
+                textRenderer.draw3D(labelText, x + 1, y - 1, 0, 1);
                 textRenderer.setColor(color);
-                textRenderer.draw3D(this.getLabelText(), x, y, 0, 1);
+                textRenderer.draw3D(labelText, x, y, 0, 1);
             }
             finally
             {
