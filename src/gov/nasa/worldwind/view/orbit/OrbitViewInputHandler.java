@@ -39,6 +39,9 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
     public static final String ORBITVIEW_RESET_ROLL = "gov.nasa.worldwind.ViewResetRoll";
 
+    /** the last requested eye position, which might not be the current view eyePosition yet due to animation */
+    protected Position targetEyePosition = null;
+
     /** Action handler to reset roll. */
     public class ResetRollActionListener extends ViewInputActionHandler
     {
@@ -96,6 +99,18 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     {
         Globe globe = this.getWorldWindow().getModel().getGlobe();
         return globe instanceof Globe2D && !((Globe2D) globe).isContinuous();
+    }
+
+    // can be overridden in subclasses to avoid having to filter transient position changes
+    // due to animations
+    protected void setTargetEyePosition(Position nextTargetPosition)
+    {
+        targetEyePosition = nextTargetPosition;
+    }
+
+    public Position getTargetEyePosition()
+    {
+        return (targetEyePosition != null) ? targetEyePosition : getView().getEyePosition();
     }
 
     //**************************************************************//
@@ -572,6 +587,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         {
             ((BasicOrbitView) view).setViewOutOfFocus(true);
         }
+        setTargetEyePosition(view.getEyePosition());
     }
 
     protected void stopGoToAnimators()
@@ -582,6 +598,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         // forcibly stopped in order to react correctly to that event.
         this.gotoAnimControl.stopAnimations();
         this.gotoAnimControl.clear();
+        setTargetEyePosition(getView().getEyePosition());
     }
 
     protected void stopUserInputAnimators(Object... names)
@@ -638,6 +655,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         AnimationController animControl,
         Position position, ViewInputAttributes.ActionAttributes attrib)
     {
+        Position newPosition;
         double smoothing = attrib.getSmoothingValue();
         if (!(attrib.isEnableSmoothing() && this.isEnableSmoothing()))
             smoothing = 0.0;
@@ -646,7 +664,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         {
             if (animControl.get(VIEW_ANIM_CENTER) != null)
                 animControl.remove(VIEW_ANIM_CENTER);
-            Position newPosition = view.getOrbitViewLimits().limitCenterPosition(view, position);
+            newPosition = view.getOrbitViewLimits().limitCenterPosition(view, position);
             view.setCenterPosition(newPosition);
             view.setViewOutOfFocus(true);
         }
@@ -657,7 +675,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
             if (centerAnimator == null || !centerAnimator.hasNext())
             {
-                Position newPosition = computeNewPosition(view, position);
+                newPosition = computeNewPosition(view, position);
                 centerAnimator = new OrbitViewCenterAnimator((BasicOrbitView) this.getView(),
                     cur, newPosition, smoothing,
                     OrbitViewPropertyAccessor.createCenterPositionAccessor(view), true);
@@ -665,7 +683,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
             }
             else
             {
-                Position newPosition = new Position(
+                newPosition = new Position(
                     centerAnimator.getEnd().getLatitude().add(
                         position.getLatitude()).subtract(cur.getLatitude()),
                     centerAnimator.getEnd().getLongitude().add(
@@ -678,6 +696,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
             centerAnimator.start();
         }
+        setTargetEyePosition(new Position(newPosition, view.getEyePosition().elevation));
         view.firePropertyChange(AVKey.VIEW, null, view);
     }
 
@@ -827,7 +846,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
                 newZoom = computeNewZoom(view, zoomAnimator.getEnd(), change);
                 zoomAnimator.setEnd(newZoom);
             }
-
+            setTargetEyePosition(new Position(view.getEyePosition(), newZoom));
             zoomAnimator.start();
         }
         view.firePropertyChange(AVKey.VIEW, null, view);
@@ -1022,6 +1041,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         this.gotoAnimControl.put(VIEW_ANIM_PAN, panAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
+        setTargetEyePosition(new Position(endCenterPos, endZoom));
     }
 
     public void addPanToAnimator(Position beginCenterPos, Position endCenterPos,
@@ -1044,6 +1064,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         this.gotoAnimControl.put(VIEW_ANIM_PAN, panAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
+        setTargetEyePosition(new Position(endCenterPos, endZoom));
     }
 
     public void addPanToAnimator(Position centerPos, Angle heading, Angle pitch, double zoom,
@@ -1081,6 +1102,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
             timeToIterate, beginPosition, endPosition);
         this.gotoAnimControl.put(VIEW_ANIM_POSITION, eyePosAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
+        setTargetEyePosition(endPosition);
     }
 
     public void addHeadingAnimator(Angle begin, Angle end)
@@ -1230,6 +1252,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         OrbitView view = (OrbitView) this.getView();
         stopAnimators();
         addPanToAnimator(lookAtPos, view.getHeading(), view.getPitch(), distance, true);
+        setTargetEyePosition(lookAtPos);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
     }
 
@@ -1237,6 +1260,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     {
         this.uiAnimControl.stopAnimations();
         this.gotoAnimControl.stopAnimations();
+        setTargetEyePosition(getView().getEyePosition());
     }
 
     public boolean isAnimating()

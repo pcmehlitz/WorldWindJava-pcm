@@ -11,8 +11,7 @@ val gdal = "org.gdal" % "gdal" % "2.0.0" // 1.11.2"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
-val gitBranch = Process("git rev-parse --abbrev-ref HEAD").lines.head
-val gitRev = Process("git rev-list --count HEAD").lines.head
+lazy val gitRev = Process("git rev-list --count HEAD").lines.head
 
 def fileFilter (regex: Regex) = new FileFilter {
   def accept(f: File) = regex.pattern.matcher(f.getAbsolutePath).matches
@@ -32,16 +31,21 @@ def patternMap (srcRoot: File, subDir: String, glob: String) = {
 
 lazy val root = (project in file(".")).
   settings(
-    organization := "org.nasa.gov",
+    organization := "gov.nasa",
     name := "worldwind",
     libraryDependencies ++= Seq(jogl,gluegen,gdal),
 
     scalaVersion := "2.11.7",
+    crossPaths := false,
 
+    version := "2.0-pcm-r" + Process("git rev-list --count HEAD").lines.head, 
     javaSource in Compile := baseDirectory.value / "src",
     excludeFilter in Compile := fileFilter( worldwindxPattern),
 
-    artifactPath in (Compile, packageBin) := file(s"${target.value}/${name.value}-2_0-$gitBranch-r$gitRev.jar"),
+    //artifactPath in (Compile, packageBin) := file(s"${target.value}/${name.value}-2.0-pcm-r${version.value}.jar"),
+    publishArtifact in (Compile, packageBin) := true,
+    publishArtifact in (Compile, packageDoc) := false,
+    publishArtifact in (Compile, packageSrc) := false,
 
     // we have to copy resources explicitly since there is no resource dir hierarchy
     mappings in (Compile, packageBin) ++= resourceDirMap( (javaSource in Compile).value, "config"),
