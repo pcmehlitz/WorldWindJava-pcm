@@ -36,11 +36,10 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     protected static final String VIEW_ANIM_PAN = "ViewAnimPan";
     protected static final String VIEW_ANIM_APP = "ViewAnimApp";
     protected static final String VIEW_ANIM_EYE = "ViewAnimEye";
+    protected static final String VIEW_ANIM_STOP = "ViewAnimStop";
 
     public static final String ORBITVIEW_RESET_ROLL = "gov.nasa.worldwind.ViewResetRoll";
 
-    /** the last requested eye position, which might not be the current view eyePosition yet due to animation */
-    protected Position targetEyePosition = null;
 
     /** Action handler to reset roll. */
     public class ResetRollActionListener extends ViewInputActionHandler
@@ -101,16 +100,14 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         return globe instanceof Globe2D && !((Globe2D) globe).isContinuous();
     }
 
-    // can be overridden in subclasses to avoid having to filter transient position changes
-    // due to animations
-    protected void setTargetEyePosition(Position nextTargetPosition)
+  /**
+    * observer point for setting animation targets. Can be used in subclasses to do target position and
+    * animation type specific processing without having to guess, filter from transient animation states,
+    * or do fragile overrides of all our methods that can set/cancel animations
+    */
+    protected void setTargetEyePosition(Position targetPosition, AnimationController controller, String actionKey)
     {
-        targetEyePosition = nextTargetPosition;
-    }
-
-    public Position getTargetEyePosition()
-    {
-        return (targetEyePosition != null) ? targetEyePosition : getView().getEyePosition();
+        // only here to be an extension point for subclasses
     }
 
     //**************************************************************//
@@ -148,6 +145,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
                     view.getEyePosition(), focalPosition, smoothing,
                     OrbitViewPropertyAccessor.createCenterPositionAccessor((OrbitView) view), true);
             this.gotoAnimControl.put(VIEW_ANIM_CENTER, centerAnimator);
+            setTargetEyePosition(new Position(focalPosition, view.getEyePosition().getAltitude()), gotoAnimControl, VIEW_ANIM_CENTER);
             view.firePropertyChange(AVKey.VIEW, null, view);
         }
     }
@@ -170,6 +168,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         double smoothing = actionAttribs.isEnableSmoothing() ? this.getScaleValueZoom(actionAttribs) : 0;
         this.gotoAnimControl.put(VIEW_ANIM_EYE, new OrbitViewEyePointAnimator(globe, orbitView, eyePoint, smoothing));
+        setTargetEyePosition(focalPosition, gotoAnimControl, VIEW_ANIM_EYE);
         view.firePropertyChange(AVKey.VIEW, null, view);
     }
 
@@ -587,7 +586,6 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         {
             ((BasicOrbitView) view).setViewOutOfFocus(true);
         }
-        setTargetEyePosition(view.getEyePosition());
     }
 
     protected void stopGoToAnimators()
@@ -598,7 +596,6 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         // forcibly stopped in order to react correctly to that event.
         this.gotoAnimControl.stopAnimations();
         this.gotoAnimControl.clear();
-        setTargetEyePosition(getView().getEyePosition());
     }
 
     protected void stopUserInputAnimators(Object... names)
@@ -620,6 +617,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     protected void handleViewStopped()
     {
         this.stopAllAnimators();
+        setTargetEyePosition(getView().getEyePosition(), null, VIEW_ANIM_STOP);
     }
 
     protected void handleOrbitViewCenterStopped()
@@ -627,6 +625,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         // The "center stopped" message instructs components to stop modifying the OrbitView's center position.
         // Therefore we stop any center position animations started by this view controller.
         this.stopUserInputAnimators(VIEW_ANIM_CENTER, VIEW_ANIM_EYE);
+        setTargetEyePosition(getView().getEyePosition(), uiAnimControl, VIEW_ANIM_STOP);
     }
 
     //**************************************************************//
@@ -696,7 +695,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
             centerAnimator.start();
         }
-        setTargetEyePosition(new Position(newPosition, view.getEyePosition().elevation));
+        setTargetEyePosition(new Position(newPosition, view.getEyePosition().elevation), animControl, VIEW_ANIM_CENTER);
         view.firePropertyChange(AVKey.VIEW, null, view);
     }
 
@@ -846,7 +845,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
                 newZoom = computeNewZoom(view, zoomAnimator.getEnd(), change);
                 zoomAnimator.setEnd(newZoom);
             }
-            setTargetEyePosition(new Position(view.getEyePosition(), newZoom));
+            setTargetEyePosition(new Position(view.getEyePosition(), newZoom), animControl, VIEW_ANIM_ZOOM);
             zoomAnimator.start();
         }
         view.firePropertyChange(AVKey.VIEW, null, view);
@@ -1041,7 +1040,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         this.gotoAnimControl.put(VIEW_ANIM_PAN, panAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
-        setTargetEyePosition(new Position(endCenterPos, endZoom));
+        setTargetEyePosition(new Position(endCenterPos, endZoom), gotoAnimControl, VIEW_ANIM_PAN);
     }
 
     public void addPanToAnimator(Position beginCenterPos, Position endCenterPos,
@@ -1064,7 +1063,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
 
         this.gotoAnimControl.put(VIEW_ANIM_PAN, panAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
-        setTargetEyePosition(new Position(endCenterPos, endZoom));
+        setTargetEyePosition(new Position(endCenterPos, endZoom), gotoAnimControl, VIEW_ANIM_PAN);
     }
 
     public void addPanToAnimator(Position centerPos, Angle heading, Angle pitch, double zoom,
@@ -1102,7 +1101,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
             timeToIterate, beginPosition, endPosition);
         this.gotoAnimControl.put(VIEW_ANIM_POSITION, eyePosAnimator);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
-        setTargetEyePosition(endPosition);
+        setTargetEyePosition(endPosition, gotoAnimControl, VIEW_ANIM_POSITION);
     }
 
     public void addHeadingAnimator(Angle begin, Angle end)
@@ -1243,6 +1242,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
             Animator centerAnimator = new PositionAnimator(interpolator,
                 begin, end, OrbitViewPropertyAccessor.createCenterPositionAccessor(orbitView));
             this.gotoAnimControl.put(VIEW_ANIM_CENTER, centerAnimator);
+            setTargetEyePosition(end, gotoAnimControl, VIEW_ANIM_CENTER);
             orbitView.firePropertyChange(AVKey.VIEW, null, orbitView);
         }
     }
@@ -1252,7 +1252,6 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         OrbitView view = (OrbitView) this.getView();
         stopAnimators();
         addPanToAnimator(lookAtPos, view.getHeading(), view.getPitch(), distance, true);
-        setTargetEyePosition(lookAtPos);
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
     }
 
@@ -1260,7 +1259,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
     {
         this.uiAnimControl.stopAnimations();
         this.gotoAnimControl.stopAnimations();
-        setTargetEyePosition(getView().getEyePosition());
+        setTargetEyePosition(getView().getEyePosition(), null, VIEW_ANIM_STOP);
     }
 
     public boolean isAnimating()

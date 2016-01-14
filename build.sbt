@@ -38,7 +38,7 @@ lazy val root = (project in file(".")).
     scalaVersion := "2.11.7",
     crossPaths := false,
 
-    version := "2.0-pcm-r" + Process("git rev-list --count HEAD").lines.head, 
+    version := "2.0-pcm-r" + Process("git rev-list --count HEAD", baseDirectory.value).lines.head, 
     javaSource in Compile := baseDirectory.value / "src",
     excludeFilter in Compile := fileFilter( worldwindxPattern),
 
