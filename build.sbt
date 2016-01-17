@@ -11,8 +11,6 @@ val gdal = "org.gdal" % "gdal" % "2.0.0" // 1.11.2"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
-lazy val gitRev = Process("git rev-list --count HEAD").lines.head
-
 def fileFilter (regex: Regex) = new FileFilter {
   def accept(f: File) = regex.pattern.matcher(f.getAbsolutePath).matches
 }
@@ -27,9 +25,12 @@ def patternMap (srcRoot: File, subDir: String, glob: String) = {
   files.map( f => (f, f.relativeTo(srcRoot).get.getPath))
 }
 
+val gitRef = settingKey[String]("retrieve git rev-list count")
+
+
 //--- project definition
 
-lazy val root = (project in file(".")).
+lazy val wwjRoot = Project("wwjRoot", file(".")).
   settings(
     organization := "gov.nasa",
     name := "worldwind",
@@ -38,7 +39,8 @@ lazy val root = (project in file(".")).
     scalaVersion := "2.11.7",
     crossPaths := false,
 
-    version := "2.0-pcm-r" + Process("git rev-list --count HEAD", baseDirectory.value).lines.head, 
+    gitRef := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
+    version := "2.0-pcm-r" + gitRef.value,
     javaSource in Compile := baseDirectory.value / "src",
     excludeFilter in Compile := fileFilter( worldwindxPattern),
 
