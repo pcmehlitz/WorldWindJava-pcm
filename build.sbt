@@ -1,5 +1,9 @@
 // basic SBT project definition to generate and publish WorldWindJava artifacts
 
+// note: we need to preserve the WorldWind directory structure, which does not 
+// conform with Maven/Gradle/SBT. Since WWJ keeps resources (properties, images)
+// within the Java source directories, we have to copy them explicitly
+
 import scala.util.matching.Regex
 
 shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.project + "]> " }
@@ -50,9 +54,19 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     publishArtifact in (Compile, packageSrc) := false,
 
     // we have to copy resources explicitly since there is no resource dir hierarchy
-    mappings in (Compile, packageBin) ++= resourceDirMap( (javaSource in Compile).value, "config"),
-    mappings in (Compile, packageBin) ++= resourceDirMap( (javaSource in Compile).value, "images"),
-    mappings in (Compile, packageBin) ++= patternMap( (javaSource in Compile).value, "gov/nasa/worldwind/util", "*.properties"),
+    // (note we have to do this for both packageBin and compile tasks)
+    mappings in Compile := resourceDirMap( (javaSource in Compile).value, "config"),
+    mappings in Compile ++= resourceDirMap( (javaSource in Compile).value, "images"),
+    mappings in Compile ++= patternMap( (javaSource in Compile).value, "gov/nasa/worldwind/util", "*.properties"),
+
+    // we need to copy resources into target/classes in case we run this with a directory based classpath
+    compile in Compile := {
+      val clsDir = (classDirectory in Compile).value
+      val fileMappings = (mappings in Compile).value 
+      IO.copy(fileMappings.map( e => (e._1, clsDir / e._2)))
+
+      (compile in Compile).value
+    },
 
     // unmanaged libs are still in the base dir
     unmanagedBase in Compile := baseDirectory.value
