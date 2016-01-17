@@ -57,94 +57,9 @@ public class GDALUtils
 
     static
     {
-        // Allow the app or user to prevent library loader replacement.
-        if (System.getProperty("gov.nasa.worldwind.prevent.gdal.loader.replacement") == null)
-            replaceLibraryLoader(); // This must be the first line of initialization
         initialize();
     }
 
-    private static class GDALLibraryLoader implements gdal.LibraryLoader
-    {
-        public void load(String libName) throws UnsatisfiedLinkError
-        {
-            if (WWUtil.isEmpty(libName))
-            {
-                String message = Logging.getMessage("nullValue.LibraryIsNull");
-                Logging.logger().severe(message);
-                throw new java.lang.UnsatisfiedLinkError(message);
-            }
-
-            // check if the library is already loaded
-            if (loadedLibraries.contains(libName))
-                return;
-
-            String message;
-
-            // check if the library is already know (from previous attempts) to fail to load
-            if ( !failedLibraries.contains(libName) )
-            {
-                try
-                {
-                    NativeLibraryLoader.loadLibrary(libName);
-                    loadedLibraries.add(libName);
-                    Logging.logger().info( Logging.getMessage("generic.LibraryLoadedOK", libName ));
-
-                    return; // GOOD! Leaving now
-                }
-                catch (Throwable t)
-                {
-                    String reason = WWUtil.extractExceptionReason(t);
-                    message = Logging.getMessage("generic.LibraryNotLoaded", libName, reason);
-                    Logging.logger().finest(message);
-
-                    failedLibraries.add(libName);
-                }
-            }
-            else
-            {
-                String reason = Logging.getMessage("generic.LibraryNotFound", libName );
-                message = Logging.getMessage("generic.LibraryNotLoaded", libName, reason);
-            }
-
-            throw new UnsatisfiedLinkError(message);
-        }
-    }
-
-    protected static void replaceLibraryLoader()
-    {
-        try
-        {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            Class gdalClass = cl.loadClass("org.gdal.gdal.gdal");
-
-            boolean isKnownBuild = false;
-            Method[] methods = gdalClass.getDeclaredMethods();
-            for (Method m : methods)
-            {
-                if ("setLibraryLoader".equals(m.getName()))
-                {
-                    gdal.setLibraryLoader(new GDALLibraryLoader());
-//                    Logging.logger().finest(Logging.getMessage("gdal.LibraryLoaderReplacedOK"));
-                    isKnownBuild = true;
-                    break;
-                }
-            }
-
-            if (!isKnownBuild)
-            {
-                String message = Logging.getMessage("gdal.UnknownBuild", gdal.VersionInfo());
-                Logging.logger().finest(message);
-            }
-        }
-        catch (ClassNotFoundException cnf)
-        {
-            Logging.logger().finest(cnf.getMessage());
-        }
-        catch (Throwable t)
-        {
-            Logging.logger().finest(t.getMessage());
-        }
-    }
 
     protected static boolean is32bitArchitecture()
     {
@@ -175,6 +90,24 @@ public class GDALUtils
         return false;
     }
 
+    protected static boolean checkGdalJNIsAvailable() 
+    {
+      try
+      {
+        Class<?> cls = Class.forName("org.gdal.gdal.gdalJNI");
+        Method mth = cls.getDeclaredMethod("isAvailable");
+        mth.setAccessible(true);
+        if ((Boolean) mth.invoke(null))
+        {
+          cls = Class.forName("org.gdal.gdalconst.gdalconstJNI");
+          mth =  cls.getDeclaredMethod("isAvailable");
+          mth.setAccessible(true);
+          return (Boolean)mth.invoke(null);
+        }
+      } catch (Throwable t) {}
+      return false;
+    }
+
     protected static void initialize()
     {
         try
@@ -197,7 +130,8 @@ public class GDALUtils
                 }
             }
 
-            if ( /* gdalNativeLibraryLoaded && */ gdalJNI.isAvailable() && gdalconstJNI.isAvailable())
+//            if ( /* gdalNativeLibraryLoaded && */ gdalJNI.isAvailable() && gdalconstJNI.isAvailable())
+            if (checkGdalJNIsAvailable()) // pcm - gdalJNI and gdalconstJNI are not public in recent GDAL distribs
             {
                 if (!runningAsJavaWebStart)
                 {
