@@ -1497,6 +1497,9 @@ public class Path extends AbstractShape
         if (d > this.getShowPositionsThreshold())
             return;
 
+        if (vboIds.length < 3)  // pcm - we might have had a async setShowPositions call
+            return;
+
         IntBuffer posPoints = pathData.positionPoints;
         if (posPoints == null || posPoints.limit() < 1)
             return;
