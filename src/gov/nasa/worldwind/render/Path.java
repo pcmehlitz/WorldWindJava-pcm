@@ -1399,6 +1399,9 @@ public class Path extends AbstractShape
 
     protected void drawVerticalOutlineVBO(DrawContext dc, int[] vboIds, PathData pathData)
     {
+        if (vboIds.length < 2)
+            return;
+
         IntBuffer polePositions = pathData.polePositions;
         if (polePositions == null || polePositions.limit() < 1)
             return;
@@ -1497,7 +1500,7 @@ public class Path extends AbstractShape
         if (d > this.getShowPositionsThreshold())
             return;
 
-        if (vboIds.length < 3)  // pcm - we might have had a async setShowPositions call
+        if (vboIds.length < 3)  // pcm - we might have had a setShowPositions call
             return;
 
         IntBuffer posPoints = pathData.positionPoints;
@@ -2446,14 +2449,14 @@ public class Path extends AbstractShape
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
             gl.glBufferData(GL.GL_ARRAY_BUFFER, vb.limit() * 4, vb.rewind(), GL.GL_STATIC_DRAW);
 
-            if (pathData.hasExtrusionPoints && this.isDrawVerticals())
+            if (pathData.hasExtrusionPoints && this.isDrawVerticals() && vboIds.length > 1)
             {
                 IntBuffer ib = pathData.polePositions;
                 gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[1]);
                 gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, ib.limit() * 4, ib.rewind(), GL.GL_STATIC_DRAW);
             }
 
-            if (this.isShowPositions())
+            if (this.isShowPositions() && vboIds.length > 2)
             {
                 IntBuffer ib = pathData.positionPoints;
                 gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[2]);
