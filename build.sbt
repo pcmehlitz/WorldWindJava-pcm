@@ -41,11 +41,11 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     name := "worldwind",
     libraryDependencies ++= Seq(jogl,gluegen,gdal),
 
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.12.1",
     crossPaths := false,
 
     gitRef := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
-    version := "2.0-pcm-r" + gitRef.value,
+    version := "2.1-pcm-r" + gitRef.value,
     javaSource in Compile := baseDirectory.value / "src",
     excludeFilter in Compile := fileFilter( worldwindxPattern),
 
