@@ -4,4 +4,9 @@
 target/
 worldwind*.jar
 doc/
-
+build/
+classes/
+testClasses/
+keystore.properties
+keystore.tar
+wwstore

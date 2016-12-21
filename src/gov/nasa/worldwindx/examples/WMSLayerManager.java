@@ -20,8 +20,8 @@ public class WMSLayerManager
 {
     protected static final String[] servers = new String[]
         {
-            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
-            "http://sedac.ciesin.columbia.edu/geoserver/wcs"
+            "https://neowms.sci.gsfc.nasa.gov/wms/wms",
+            "https://sedac.ciesin.columbia.edu/geoserver/wcs"
         };
 
     protected static class AppFrame extends ApplicationTemplate.AppFrame

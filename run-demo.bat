@@ -1,9 +1,11 @@
+@echo off
 REM Copyright (C) 2012 United States Government as represented by the Administrator of the
 REM National Aeronautics and Space Administration.
 REM All Rights Reserved.
 
-REM Windows Batch file for Running a WorldWind Demo
-REM $Id: run-demo.bat 1171 2013-02-11 21:45:02Z dcollins $
+REM Default to the ApplicationTemplate example if a class name is not provided
+IF "%1"=="" (SET WWDEMO=gov.nasa.worldwindx.examples.ApplicationTemplate) ELSE (SET WWDEMO=%*)
 
-@echo Running %1
-java -Xmx512m -Dsun.java2d.noddraw=true -classpath .\src;.\classes;.\worldwind.jar;.\worldwindx.jar;.\jogl-all.jar;.\gluegen-rt.jar;.\gdal.jar %*
+REM Run a WorldWind Demo
+@echo Running %WWDEMO%
+java -Xmx1024m -Dsun.java2d.noddraw=true -classpath .\worldwind.jar;.\worldwindx.jar;.\gdal.jar;.\jogl-all.jar;.\gluegen-rt.jar %WWDEMO%
