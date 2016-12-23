@@ -14,8 +14,8 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.util.*;
 
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
 import java.awt.*;
 import java.beans.*;
 import java.util.*;
@@ -65,6 +65,14 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
 
         try
         {
+            // pcm - without explicitly requesting the pixel scale factors to be {1.0f,1.0f}
+            // at least on high DPI OS X displays we end up with {2.0f,2.0f} once the
+            // GLCanvas is realized, which then causes MouseEvent point coordinates to be
+            // off by a factor of 0.5, which then causes all operations triggered by
+            // AWTInputHandler mouse callbacks to fail (e.g. drag/click re-center)
+            float[] sscale = {1.0f,1.0f};
+            setSurfaceScale(sscale);
+
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             this.wwd.addPropertyChangeListener(this);
@@ -88,8 +96,8 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
      *
      * @param shareWith a <code>WorldWindow</code> with which to share graphics resources.
      *
-     * @see GLCanvas#GLCanvas(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
-     *      javax.media.opengl.GLContext, java.awt.GraphicsDevice)
+     * @see GLCanvas#GLCanvas(com.jogamp.opengl.GLCapabilitiesImmutable, com.jogamp.opengl.GLCapabilitiesChooser,
+     *      com.jogamp.opengl.GLContext, java.awt.GraphicsDevice)
      */
     public WorldWindowGLCanvas(WorldWindow shareWith)
     {
@@ -100,6 +108,9 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
 
         try
         {
+            float[] sscale = {1.0f,1.0f};  // pcm - see above
+            setSurfaceScale(sscale);
+
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             this.wwd.addPropertyChangeListener(this);
@@ -128,8 +139,8 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
      * @param device    the <code>GraphicsDevice</code> on which to create the window. May be null, in which case the
      *                  default screen device of the local {@link GraphicsEnvironment} is used.
      *
-     * @see GLCanvas#GLCanvas(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
-     *      javax.media.opengl.GLContext, java.awt.GraphicsDevice)
+     * @see GLCanvas#GLCanvas(com.jogamp.opengl.GLCapabilitiesImmutable, com.jogamp.opengl.GLCapabilitiesChooser,
+     *      com.jogamp.opengl.GLContext, java.awt.GraphicsDevice)
      */
     public WorldWindowGLCanvas(WorldWindow shareWith, java.awt.GraphicsDevice device)
     {
@@ -140,6 +151,9 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
 
         try
         {
+            float[] sscale = {1.0f,1.0f};  // pcm - see above
+            setSurfaceScale(sscale);
+
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             this.wwd.addPropertyChangeListener(this);
@@ -172,8 +186,8 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
      * @param chooser      a chooser object that customizes the specified capabilities. May be null, in which case a
      *                     default chooser is used.
      *
-     * @see GLCanvas#GLCanvas(javax.media.opengl.GLCapabilitiesImmutable, javax.media.opengl.GLCapabilitiesChooser,
-     *      javax.media.opengl.GLContext, java.awt.GraphicsDevice)
+     * @see GLCanvas#GLCanvas(com.jogamp.opengl.GLCapabilitiesImmutable, com.jogamp.opengl.GLCapabilitiesChooser,
+     *      com.jogamp.opengl.GLContext, java.awt.GraphicsDevice)
      */
     public WorldWindowGLCanvas(WorldWindow shareWith, java.awt.GraphicsDevice device,
         GLCapabilities capabilities, GLCapabilitiesChooser chooser)
@@ -185,6 +199,9 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
 
         try
         {
+            float[] sscale = {1.0f,1.0f};  // pcm - see above
+            setSurfaceScale(sscale);
+
             this.wwd = ((WorldWindowGLDrawable) WorldWind.createConfigurationComponent(AVKey.WORLD_WINDOW_CLASS_NAME));
             this.wwd.initDrawable(this);
             if (shareWith != null)

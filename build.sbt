@@ -10,9 +10,9 @@ shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.p
 
 //--- but define the external dependencies here so that we can publish binary artifacts
 //    (latest jogl-all-main and gluegen-rt-main are 2.3.2, latest gdal is 2.1.0, but WWJ does not compile against these)
-val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.1.5-01"
-val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.1.5-01"
-val gdal = "org.gdal" % "gdal" % "2.0.0" // 1.11.2"
+val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
+val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
+val gdal = "org.gdal" % "gdal" % "2.1.0" // "2.0.0" // 1.11.2"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
