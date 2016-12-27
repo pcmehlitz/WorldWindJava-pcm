@@ -17,3 +17,7 @@ worldwind.jar
 worldwindx.jar
 
 wwstore
+
+.idea/
+project/
+target/
