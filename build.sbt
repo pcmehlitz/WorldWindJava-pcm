@@ -8,11 +8,10 @@ import scala.util.matching.Regex
 
 shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
-//--- but define the external dependencies here so that we can publish binary artifacts
-//    (latest jogl-all-main and gluegen-rt-main are 2.3.2, latest gdal is 2.1.0, but WWJ does not compile against these)
+//--- external dependencies
 val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
 val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
-val gdal = "org.gdal" % "gdal" % "2.1.0" // "2.0.0" // 1.11.2"
+val gdal = "org.gdal" % "gdal" % "2.1.0" // "2.0.0"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
@@ -37,22 +36,28 @@ val gitRef = settingKey[String]("retrieve git rev-list count")
 
 lazy val wwjRoot = Project("wwjRoot", file(".")).
   settings(
-    organization := "gov.nasa",
-    name := "worldwind",
+    organization := "com.github.pcmehlitz",
+    name := "worldwind-pcm",
     libraryDependencies ++= Seq(jogl,gluegen,gdal),
 
     scalaVersion := "2.12.1",
     crossPaths := false,
 
     gitRef := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
-    version := "2.1-pcm-r" + gitRef.value,
+    version := "2.1.0-r" + gitRef.value,
     javaSource in Compile := baseDirectory.value / "src",
+
+    // we omit example applications from the build artifacts
     excludeFilter in Compile := fileFilter( worldwindxPattern),
 
-    //artifactPath in (Compile, packageBin) := file(s"${target.value}/${name.value}-2.0-pcm-r${version.value}.jar"),
-    publishArtifact in (Compile, packageBin) := true,
-    publishArtifact in (Compile, packageDoc) := false,
-    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in Test := false,
+
+    javacOptions in (Compile,doc) ++= Seq(
+      "-J-Xmx1024m",
+      "-splitindex",
+      "-exclude","gov.nasa.worldwindx:gov.nasa.worldwind.util.webview",
+      "-Xdoclint:none"
+    ),
 
     // we have to copy resources explicitly since there is no resource dir hierarchy
     // (note we have to do this for both packageBin and compile tasks)
@@ -67,9 +72,27 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
       IO.copy(fileMappings.map( e => (e._1, clsDir / e._2)))
 
       (compile in Compile).value
-    },
-
-    // unmanaged libs are still in the base dir
-    unmanagedBase in Compile := baseDirectory.value
+    }
   )
 
+//---- publishing meta data
+pomExtra := (
+  <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
+    <licenses>
+      <license>
+        <name>NASA OPEN SOURCE AGREEMENT VERSION 1.3</name>
+        <url>https://ti.arc.nasa.gov/opensource/nosa/</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
+      <connection>git@github.com:pcmehlitz/WorldWindJava-pcm.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>pcmehlitz</id>
+        <name>Peter Mehlitz</name>
+        <url>https://github.com/pcmehlitz</url>
+      </developer>
+    </developers>)

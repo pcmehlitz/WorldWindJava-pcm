@@ -1,121 +1,51 @@
-<img src="https://worldwind.arc.nasa.gov/css/images/nasa-logo.svg" height="100"/>
+# WorldWindJava-PCM
+ 
+This is a fork of the original [NASA WorldWind Java](https://github.com/NASAWorldWind/WorldWindJava)
+repository. This repository is not intended as an alternative but rather as a staging area for
+potential bug fixes and features. Please refer to the 
+[original README.md](https://github.com/NASAWorldWind/WorldWindJava/blob/master/README.md) for
+general WorldWindJava information, which is also included in this distribution as a renamed
+`README_ORIGINAL.md`.
+ 
+The `master` branch of this repository is only intended to publish artifacts (jars) to local caches
+(~/.m2 or ~/.ivy2) and servers such as the [Central Repository](http://central.sonatype.org/).  It
+does *not* contain re-distributed 3rd party libraries, and hence does not support the [Apache
+Ant](http://ant.apache.org/) based build process of the original repository, which depends on
+re-distributed jars.
 
-# World Wind Java
+The underlying version of the original repository is kept in a `base` branch. Use `git diff base`
+to quickly assess changes made in the `master` branch.
+ 
+Current changes in WorldWindJava-PCM fall into four areas:
+ 
+(1) update to current versions of [JOGL](http://jogamp.org/) (2.3.2) and [GDAL](http://www.gdal.org/) (2.1.0)
+ 
+(2) support publication of build artifacts to Maven Central, enabling client projects to 
+add WorldWindJava as a normal 3rd party dependency (e.g. in build systems such as SBT, Gradle
+or Maven). Note this is transitive, i.e. client projects do not have to copy or otherwise
+resolve any of the libraries used by WorldWindJava. Note that WorldWindJava-PCM uses a 
+different build system [SBT](http://www.scala-sbt.org/) to create/publish artifacts than 
+the original WorldWindJava, which uses [Apache Ant](http://ant.apache.org/)
 
-[![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindJava.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindJava)
+(3) thread safety related fixes - WorldWindJava-PCM is mostly used in projects such as
+[RACE](https://github.com/nasarace/race) that extensively use concurrency and distributed
+operation to import and process large and highly dynamic data sets. While not all rendering 
+relevant  information can be updated outside the UI thread(s), some can with small respective
+changes within WorldWind
 
-3D virtual globe API for desktop Java, developed by NASA. Provides a geographic context, complete with terrain, for 
-visualizing geographic or geo-located information in 3D and 2D. World Wind Java provides high-resolution terrain and 
-imagery, retrieved from remote servers automatically as needed. Developers can provide custom terrain and imagery. 
-Contains a rich set of features for displaying and interacting with geographic data and representing a wide range of 
-geometric objects. More information at [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov).       
+(4) observable animation targets - WorldWindJava-PCM is used for viewers that can be synchronized
+across the network (e.g. for applications such as situation rooms). To avoid serious lag and
+potential loss of synchronization between collaborating viewers it is essential that animations
+such as re-centering or zoom-in/-out are not transmitted as a stream of transient eye positions
+but as the targeted end-position of respective animations. To that end WorldWindJava-PCM 
+contains small, minimally-intrusive extensions that allow observation of animation end points 
+in user provided input handlers by overriding a new stub method of `OrbitViewInputHandler`
 
-## Get Started
+~~~~
+    protected void setTargetEyePosition(Position targetPosition, AnimationController controller, String actionKey)
+~~~~
 
-Develop a world-class World Wind application for personal computers. Setup instructions, developers guides,
-API documentation and more are available at [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov). This GitHub
-repository contains the library source, examples and tutorials.
 
-- [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov) has all things World Wind in one place
-- [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
-- [GitHub Issues](https://github.com/NASAWorldWind/WorldWindJava/issues) provides requirements and issue tracking
-- [Travis CI](https://travis-ci.org/NASAWorldWind/WorldWindJava) provides continuous integration and build automation
-- [IntelliJ IDEA](https://www.jetbrains.com/idea/) is used by the NASA World Wind development team
-
-## Releases and Roadmap
-
-Official World Wind Java releases from the [master](https://github.com/NASAWorldWind/WorldWindJava/tree/master) branch. 
-Releases have the latest stable features, enhancements and bug fixes ready for production use.
-
-- [Latest Release](https://github.com/NASAWorldWind/WorldWindJava/releases/latest) has the current release changelogs, binary assets, and associated GitHub tag
-- [Releases](https://github.com/NASAWorldWind/WorldWindJava/releases/) lists all official releases
-- [Milestones](https://github.com/NASAWorldWind/WorldWindJava/milestones) documents upcoming releases and the development roadmap
-- [API Documentation](https://worldwind.arc.nasa.gov/assets/java/latest/javadoc) for the latest release
-
-## Daily Builds
-
-World Wind Java builds from the [develop](https://github.com/NASAWorldWind/WorldWindJava/tree/develop) branch. Daily 
-builds have the newest, bleeding-edge World Wind Java features. Intended for developers and early adopters.
-
-- [Releases](https://github.com/NASAWorldWind/WorldWindJava/releases) hosts the daily builds
-- [API Documentation](https://worldwind.arc.nasa.gov/assets/java/daily/javadoc) for the current daily build
-
-## Run a Demo 
-   
-###### From a Web Browser
-   
-- [World Wind Demo App](https://worldwind.arc.nasa.gov/java/latest/webstart/ApplicationTemplate.jnlp) shows World Wind's basic capabilities
-- [Java Demos](http://goworldwind.org/demos) has a complete list of example apps
-   
-###### From a Windows Development Environment
-
-- Download and extract the [Latest Release](https://github.com/NASAWorldWind/WorldWindJava/releases/latest)
-- Open the Command Prompt
-```bash
-cd [World Wind release]
-run-demo.bat
-```
-
-###### From a Linux or macOS Development Environment
-
-- Download and extract the [Latest Release](https://github.com/NASAWorldWind/WorldWindJava/releases/latest)
-- Open the Terminal app
-```bash
-cd [World Wind release]
-sh run-demo.bash
-```
-
-###### Troubleshooting
-   
-World Wind requires a modern graphics card with a current driver. Most display problems are caused by out-of-date 
-graphics drivers. On Windows, visit your graphics card manufacturer's web site for the latest driver: NVIDIA, ATI or 
-Intel. The drivers are typically under a link named Downloads or Support. If you're using a laptop, the latest drivers 
-are found at the laptop manufacturer's web site.
-
-## JOGL Native Binaries
-
-JOGL performs runtime extraction of native binaries. Some deployment situations may not allow this because it extracts 
-the binaries to the application user’s temp directory. Runtime extraction can be avoided by by modifying World Wind 
-Java's JOGL distribution to load native binaries directly from the library path instead of dynamically using the native 
-binary JAR files as follows:
-                                                                                                     
-1. Extract the GlueGen and JOGL native binary JAR files for the desired platform.
-   These JAR files follow the naming pattern gluegen-rt-natives-PLATFORM.jar and jogl-all-natives-PLATFORM.jar
-2. Place the extracted native binaries either in the program's working directory or in a location specified as the
-   library path. The following JOGL user's guide page outlines supported library path variables:
-   https://jogamp.org/jogl/doc/userguide/index.html#traditionallibraryloading
-3. Remove the GlueGen and JOGL native binary JAR files from your application's workspace.
-   JOGL attempts to use the native binary JAR files before loading from the library path, so these files must not be
-   deployed with the application.
-4. When running, specify the JVM argument -Djogamp.gluegen.UseTempJarCache=false
-
-## License
-
-    NASA WORLD WIND
-
-    Copyright (C) 2001 United States Government
-    as represented by the Administrator of the
-    National Aeronautics and Space Administration.
-    All Rights Reserved.
-
-    NASA OPEN SOURCE AGREEMENT VERSION 1.3
-
-    This open source agreement ("agreement") defines the rights of use, reproduction,
-    distribution, modification and redistribution of certain computer software originally
-    released by the United States Government as represented by the Government Agency
-    listed below ("Government Agency"). The United States Government, as represented by
-    Government Agency, is an intended third-party beneficiary of all subsequent
-    distributions or redistributions of the subject software. Anyone who uses, reproduces,
-    distributes, modifies or redistributes the subject software, as defined herein, or any
-    part thereof, is, by that action, accepting in full the responsibilities and obligations 
-    contained in this agreement.
-
-    Government Agency: National Aeronautics and Space Administration (NASA)
-    Government Agency Original Software Designation: ARC-15166-1
-    Government Agency Original Software Title: NASA World Wind
-    User Registration Requested. Please send email with your contact information to Patrick.Hogan@nasa.gov
-    Government Agency Point of Contact for Original Software: Patrick.Hogan@nasa.gov
-
-    You may obtain a full copy of the license at:
-
-        https://worldwind.arc.nasa.gov/LICENSE.html
+Please note this repository uses the same 
+[NOSA v1.3 license](https://github.com/NASAWorldWind/WorldWindJava/blob/master/LICENSE.txt) as the
+original.

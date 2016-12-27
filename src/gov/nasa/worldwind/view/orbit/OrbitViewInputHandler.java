@@ -103,7 +103,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
   /**
     * observer point for setting animation targets. Can be used in subclasses to do target position and
     * animation type specific processing without having to guess, filter from transient animation states,
-    * or do fragile overrides of all our methods that can set/cancel animations
+    * or do fragile overrides of all our methods that can set/cancel animations - pcm
     */
     protected void setTargetEyePosition(Position targetPosition, AnimationController controller, String actionKey)
     {
