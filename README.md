@@ -1,17 +1,28 @@
 # WorldWindJava-PCM
  
 This is a fork of the original [NASA WorldWind Java](https://github.com/NASAWorldWind/WorldWindJava)
-repository. This repository is not intended as an alternative but rather as a staging area for
-potential bug fixes and features. Please refer to the 
-[original README.md](https://github.com/NASAWorldWind/WorldWindJava/blob/master/README.md) for
+repository. 
+
+This repository is not intended as an alternative but rather as a staging area for:
+
+ * publishing artifacts to the [Central Repository](http://central.sonatype.org/)
+ * potential bug fixes 
+ * additional features
+ 
+Please refer to the [original README.md](https://github.com/NASAWorldWind/WorldWindJava/blob/master/README.md) for
 general WorldWindJava information, which is also included in this distribution as a renamed
 `README_ORIGINAL.md`.
  
 The `master` branch of this repository is only intended to publish artifacts (jars) to local caches
 (~/.m2 or ~/.ivy2) and servers such as the [Central Repository](http://central.sonatype.org/).  It
 does *not* contain re-distributed 3rd party libraries, and hence does not support the [Apache
-Ant](http://ant.apache.org/) based build process of the original repository, which depends on
+Ant](http://ant.apache.org/) based build process of the original project, which depends on
 re-distributed jars.
+
+To import the binary artifacts produced by the `master` branch, add the following line to your SBT build configuration:
+```scala
+libraryDependencies += "com.github.pcmehlitz" % "worldwind-pcm" % "2.1.0.+"
+```
 
 The underlying version of the original repository is kept in a `base` branch. Use `git diff base`
 to quickly assess changes made in the `master` branch.
@@ -37,13 +48,13 @@ changes within WorldWind
 across the network (e.g. for applications such as situation rooms). To avoid serious lag and
 potential loss of synchronization between collaborating viewers it is essential that animations
 such as re-centering or zoom-in/-out are not transmitted as a stream of transient eye positions
-but as the targeted end-position of respective animations. To that end WorldWindJava-PCM 
-contains small, minimally-intrusive extensions that allow observation of animation end points 
+but as the targeted end-position of the respective animation. To that end, WorldWindJava-PCM 
+contains small, minimally-invasive extensions that allow observation of animation end points 
 in user provided input handlers by overriding a new stub method of `OrbitViewInputHandler`
 
-~~~~
-    protected void setTargetEyePosition(Position targetPosition, AnimationController controller, String actionKey)
-~~~~
+```java
+protected void setTargetEyePosition(Position targetPosition, AnimationController controller, String actionKey)
+```
 
 
 Please note this repository uses the same 

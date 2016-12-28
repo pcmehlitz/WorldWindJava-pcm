@@ -29,7 +29,7 @@ def patternMap (srcRoot: File, subDir: String, glob: String) = {
   files.map( f => (f, f.relativeTo(srcRoot).get.getPath))
 }
 
-val gitRef = settingKey[String]("retrieve git rev-list count")
+val gitRev = settingKey[String]("retrieve git rev-list count")
 
 
 //--- project definition
@@ -43,8 +43,10 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     scalaVersion := "2.12.1",
     crossPaths := false,
 
-    gitRef := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
-    version := "2.1.0-r" + gitRef.value,
+    // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
+    // our Git revision number (e.g. 2.1.0.177)
+    gitRev := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
+    version := "2.1.0." + gitRev.value,
     javaSource in Compile := baseDirectory.value / "src",
 
     // we omit example applications from the build artifacts
@@ -76,7 +78,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
   )
 
 //---- publishing meta data
-pomExtra := (
+pomExtra in Global := {
   <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
     <licenses>
       <license>
@@ -87,7 +89,7 @@ pomExtra := (
     </licenses>
     <scm>
       <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
-      <connection>git@github.com:pcmehlitz/WorldWindJava-pcm.git</connection>
+      <connection>scm:git:github.com/pcmehlitz/WorldWindJava-pcm.git</connection>
     </scm>
     <developers>
       <developer>
@@ -95,4 +97,5 @@ pomExtra := (
         <name>Peter Mehlitz</name>
         <url>https://github.com/pcmehlitz</url>
       </developer>
-    </developers>)
+    </developers>
+}
