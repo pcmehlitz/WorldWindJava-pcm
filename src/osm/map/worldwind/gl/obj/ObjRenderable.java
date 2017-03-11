@@ -25,8 +25,8 @@ import osm.map.worldwind.gl.GLRenderable;
 public class ObjRenderable extends GLRenderable {
 
 	static Map<String, ObjLoader> modelCache = new HashMap<>();
-	String modelSource;
-	boolean centerit = false, flipTextureVertically = false;
+	protected String modelSource;
+	protected boolean centerit = false, flipTextureVertically = false;
 
 	private String id;
 
