@@ -89,9 +89,9 @@ public class ObjLoader {
 				}
 			}
 			this.bbox = new BoundingBox(this.getXWidth(), this.getYHeight(), this.getZDepth(), this.bottompoint, centered);
+
 		} catch (Exception e) {
-			System.err.println("Error: could not load " + objPath);
-			e.printStackTrace();
+			throw new RuntimeException("error loading model: " + basePath + "/" + objPath, e);
 		}
 	}
 
