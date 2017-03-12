@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+
 import com.jogamp.opengl.GL2;
 import osm.map.worldwind.gl.obj.MtlLoader.Material;
 
@@ -103,6 +105,9 @@ public class ObjLoader {
 			if (f.exists()) {
 				is = new FileInputStream(f);
 			}
+		}
+		if (path.endsWith(".gz")){
+			is = new GZIPInputStream(is,8192);
 		}
 		return is;
 	}
