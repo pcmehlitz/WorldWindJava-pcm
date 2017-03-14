@@ -851,7 +851,7 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         view.firePropertyChange(AVKey.VIEW, null, view);
     }
 
-    protected static Position computeNewPosition(OrbitView view, Position position)
+    protected Position computeNewPosition(OrbitView view, Position position)
     {
         Angle newLat = Angle.fromDegrees(WWMath.clamp(position.latitude.degrees, -90, 90));
         Angle newLon = Angle.normalizedLongitude(position.longitude);
@@ -859,19 +859,19 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         return view.getOrbitViewLimits().limitCenterPosition(view, newPosition);
     }
 
-    protected static Angle computeNewHeading(OrbitView view, Angle heading)
+    protected Angle computeNewHeading(OrbitView view, Angle heading)
     {
         Angle newHeading = BasicOrbitView.normalizedHeading(heading);
         return view.getOrbitViewLimits().limitHeading(view, newHeading);
     }
 
-    protected static Angle computeNewPitch(OrbitView view, Angle pitch)
+    protected Angle computeNewPitch(OrbitView view, Angle pitch)
     {
         Angle newPitch = BasicOrbitView.normalizedPitch(pitch);
         return view.getOrbitViewLimits().limitPitch(view, newPitch);
     }
 
-    protected static double computeNewZoom(OrbitView view, double curZoom, double change)
+    protected double computeNewZoom(OrbitView view, double curZoom, double change)
     {
         double logCurZoom = curZoom != 0 ? Math.log(curZoom) : 0;
         double newZoom = Math.exp(logCurZoom + change);
