@@ -1195,19 +1195,23 @@ public class PointPlacemark extends WWObjectImpl
         }
         else
         {
-            TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
-            try
-            {
-                textRenderer.begin3DRendering();
-                textRenderer.setColor(backgroundColor);
-                textRenderer.draw3D(labelText, x + 1, y - 1, 0, 1);
-                textRenderer.setColor(color);
-                textRenderer.draw3D(labelText, x, y, 0, 1);
-            }
-            finally
-            {
-                textRenderer.end3DRendering();
-            }
+            renderLabelText(dc, labelText, x, y, font, color, backgroundColor);
+        }
+    }
+
+    protected void renderLabelText (DrawContext dc, String labelText, float x, float y, Font font, Color color, Color backgroundColor) {
+        TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
+        try
+        {
+            textRenderer.begin3DRendering();
+            textRenderer.setColor(backgroundColor);
+            textRenderer.draw3D(labelText, x + 1, y - 1, 0, 1);
+            textRenderer.setColor(color);
+            textRenderer.draw3D(labelText, x, y, 0, 1);
+        }
+        finally
+        {
+            textRenderer.end3DRendering();
         }
     }
 
