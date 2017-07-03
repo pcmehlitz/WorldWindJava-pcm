@@ -11,6 +11,7 @@ import gov.nasa.worldwind.util.OGLTextRenderer;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 
 /**
@@ -165,9 +166,16 @@ public class MultiLabelPointPlacemark extends PointPlacemark {
 
     protected void drawSubLabels (TextRenderer textRenderer, float x, float y, Color color, Color backgroundColor){
         y -= labelHeight;
-        for (String sub: subLabels){
-            drawString(sub, textRenderer, x, y, color, backgroundColor);
-            y -= subHeight;
+        // instead of synchronizing with label setters we favor throughput and just ignore concurrent change exceptions.
+        // in the rare case this happens the labels will get redrawn anyways
+        try {
+            for (int i=0; i<subLabels.size(); i++) {
+                String sub = subLabels.get(i);
+                drawString(sub, textRenderer, x, y, color, backgroundColor);
+                y -= subHeight;
+            }
+        } catch (ArrayIndexOutOfBoundsException aiobx) {
+            // ignore, it will get redrawn
         }
     }
 
