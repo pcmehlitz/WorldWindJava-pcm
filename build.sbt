@@ -12,6 +12,7 @@ shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.p
 val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
 val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
 val gdal = "org.gdal" % "gdal" % "2.1.0" // "2.0.0"
+val jackson = "org.codehaus.jackson" % "jackson-core-asl" % "1.5.4"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
@@ -38,7 +39,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
   settings(
     organization := "com.github.pcmehlitz",
     name := "worldwind-pcm",
-    libraryDependencies ++= Seq(jogl,gluegen,gdal),
+    libraryDependencies ++= Seq(jogl, gluegen, gdal, jackson),
 
     scalaVersion := "2.12.1",
     crossPaths := false,
@@ -46,7 +47,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
     // our Git revision number (e.g. 2.1.0.177)
     gitRev := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
-    version := "2.1.0." + gitRev.value,
+    version := "2.1.1." + gitRev.value,
     javaSource in Compile := baseDirectory.value / "src",
 
     // we omit example applications from the build artifacts
