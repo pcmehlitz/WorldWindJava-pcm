@@ -37,7 +37,7 @@ val gitRev = settingKey[String]("retrieve git rev-list count")
 
 lazy val wwjRoot = Project("wwjRoot", file(".")).
   settings(
-    organization := "com.github.pcmehlitz",
+    organization := "com.github.rfmejia",
     name := "worldwind-pcm",
     libraryDependencies ++= Seq(jogl, gluegen, gdal, jackson),
 
@@ -80,7 +80,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
 
 //---- publishing meta data
 pomExtra in Global := {
-  <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
+  <url>https://github.com/rfmejia/WorldWindJava-pcm.git</url>
     <licenses>
       <license>
         <name>NASA OPEN SOURCE AGREEMENT VERSION 1.3</name>
@@ -89,14 +89,13 @@ pomExtra in Global := {
       </license>
     </licenses>
     <scm>
-      <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
-      <connection>scm:git:github.com/pcmehlitz/WorldWindJava-pcm.git</connection>
+      <url>https://github.com/rfmejia/WorldWindJava-pcm.git</url>
+      <connection>scm:git:github.com/rfmejia/WorldWindJava-pcm.git</connection>
     </scm>
     <developers>
       <developer>
-        <id>pcmehlitz</id>
-        <name>Peter Mehlitz</name>
-        <url>https://github.com/pcmehlitz</url>
+        <id>rfmejia</id>
+        <url>https://github.com/rfmejia</url>
       </developer>
     </developers>
 }
