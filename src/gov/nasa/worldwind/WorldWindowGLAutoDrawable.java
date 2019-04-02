@@ -57,6 +57,7 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
     protected ScheduledFuture viewRefreshTask;
     protected boolean enableGpuCacheReinitialization = true;
 
+
     /** Construct a new <code>WorldWindowGLCanvas</code> for a specified {@link GLDrawable}. */
     public WorldWindowGLAutoDrawable()
     {

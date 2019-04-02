@@ -14,14 +14,18 @@ import java.awt.*;
 /**
  * @author lado
  * @version $Id: PickedObject.java 1171 2013-02-11 21:45:02Z dcollins $
+ *
+ * 2018-05-11 pcm: modified to support subclasses in order to avoid temporary objects. Ideally, this should have
+ * been separated into interface/implementation but there are plenty of type and ctor references in the rest of
+ * WorldWind that would have to be changed
  */
 public class PickedObject extends AVListImpl
 {
-    private final Point pickPoint;
-    private final int colorCode;
-    private final Object userObject;
-    private boolean isOnTop = false;
-    private boolean isTerrain = false;
+    protected Point pickPoint;
+    protected int colorCode;
+    protected Object userObject;
+    protected boolean isOnTop = false;
+    protected boolean isTerrain = false;
 
     public PickedObject(int colorCode, Object userObject)
     {

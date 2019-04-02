@@ -52,6 +52,9 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
     protected double framesPerSecond;
     protected double frameTime;
     protected double pickTime;
+
+    protected long lastViewStateID = -1; // pcm - to keep track of view changes
+
     /**
      * The pick point in AWT screen coordinates, or <code>null</code> if the pick point is disabled. Initially
      * <code>null</code>.
@@ -160,6 +163,8 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
 
         View oldView = this.view;
         this.view = view;
+
+        if (oldView != view) lastViewStateID = -1; // pcm - make sure this is detected as a view state change
 
         this.firePropertyChange(AVKey.VIEW, oldView, view);
     }
@@ -471,6 +476,13 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         dc.setFrameTimeStamp(frameTimeStamp);
         // Indicate the frame time stamp to apps.
         this.setValue(AVKey.FRAME_TIMESTAMP, frameTimeStamp);
+
+        if (lastViewStateID != view.getViewStateID()) {  // pcm
+            dc.setViewStateChanged(true);
+            lastViewStateID = view.getViewStateID();
+        } else {
+            dc.setViewStateChanged(false);
+        }
     }
 
     protected Point getViewportCenter(DrawContext dc)
@@ -827,10 +839,15 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
         dc.setOrderedRenderingMode(true);
 //        dc.applyGroupingFilters();
         dc.applyClutterFilter();
-        while (dc.peekOrderedRenderables() != null)
-        {
-            dc.pollOrderedRenderables().pick(dc, dc.getPickPoint());
+
+        for (OrderedRenderable r = dc.pollOrderedRenderables(); r != null; r = dc.pollOrderedRenderables()) {
+            r.pick(dc, dc.getPickPoint());
         }
+
+//        while (dc.peekOrderedRenderables() != null)
+//        {
+//            dc.pollOrderedRenderables().pick(dc, dc.getPickPoint());
+//        }
         dc.setOrderedRenderingMode(false);
     }
 
@@ -920,18 +937,28 @@ public abstract class AbstractSceneController extends WWObjectImpl implements Sc
             dc.setOrderedRenderingMode(true);
 //            dc.applyGroupingFilters();
             dc.applyClutterFilter();
-            while (dc.peekOrderedRenderables() != null)
-            {
-                try
-                {
-                    dc.pollOrderedRenderables().render(dc);
-                }
-                catch (Exception e)
-                {
-                    Logging.logger().log(Level.WARNING,
-                        Logging.getMessage("BasicSceneController.ExceptionDuringRendering"), e);
+
+            for (OrderedRenderable r = dc.pollOrderedRenderables(); r != null; r = dc.pollOrderedRenderables()){
+                try {
+                    r.render(dc);
+                } catch (Exception e) {
+                    Logging.logger().log(Level.WARNING,Logging.getMessage("BasicSceneController.ExceptionDuringRendering"), e);
                 }
             }
+
+//            while (dc.peekOrderedRenderables() != null)
+//            {
+//                try
+//                {
+//                    dc.pollOrderedRenderables().render(dc);
+//                }
+//                catch (Exception e)
+//                {
+//                    Logging.logger().log(Level.WARNING,
+//                        Logging.getMessage("BasicSceneController.ExceptionDuringRendering"), e);
+//                }
+//            }
+
             dc.setOrderedRenderingMode(false);
 
             // Draw the diagnostic displays.

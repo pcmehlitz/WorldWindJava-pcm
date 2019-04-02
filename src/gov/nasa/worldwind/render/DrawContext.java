@@ -152,6 +152,20 @@ public interface DrawContext extends WWObject, Disposable
     View getView();
 
     /**
+     * Has the view changed since the last display (pick/repaint) cycle
+     *
+     * 05/12/18 pcm
+     */
+    boolean getViewStateChanged();
+
+    /**
+     * set the view change status (normally done from SceneController)
+     *
+     * 05/12/18 pcm
+     */
+    void setViewStateChanged(boolean hasChanged);
+
+    /**
      * Assign a new <code>Model</code>. Some layers cannot function properly with a null <code>Model</code>. It is
      * recommended that the <code>Model</code> is never set to null during a normal render pass.
      *
@@ -287,6 +301,14 @@ public interface DrawContext extends WWObject, Disposable
      * @throws IllegalArgumentException if pickedObject is <code>null</code>.
      */
     void addObjectInPickRectangle(PickedObject pickedObject);
+
+    /**
+     * non-object version of getUniquePickColor(), to avoid allocation of lots of Color objects that are just used as
+     * containers for int values
+     *
+     * @return int value of unique pick color code
+     */
+    int getUniquePickColorCode();
 
     /**
      * Returns a unique color to serve as a pick identifier during picking. This allocates a single unique color from

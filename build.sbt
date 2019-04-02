@@ -5,13 +5,14 @@
 // within the Java source directories, we have to copy them explicitly
 
 import scala.util.matching.Regex
+import scala.sys.process.Process
 
 shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
 //--- external dependencies
 val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
 val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
-val gdal = "org.gdal" % "gdal" % "2.1.0" // "2.0.0"
+val gdal = "org.gdal" % "gdal" % "2.4.0" // "2.3.0"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
@@ -40,12 +41,12 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     name := "worldwind-pcm",
     libraryDependencies ++= Seq(jogl,gluegen,gdal),
 
-    scalaVersion := "2.12.1",
+    scalaVersion := "2.12.8", // not really used yet
     crossPaths := false,
 
     // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
     // our Git revision number (e.g. 2.1.0.177)
-    gitRev := Process("git rev-list --count HEAD", baseDirectory.value).lines.head,
+    gitRev := Process("git rev-list --count HEAD", baseDirectory.value).lineStream.head,
     version := "2.1.0." + gitRev.value,
     javaSource in Compile := baseDirectory.value / "src",
 

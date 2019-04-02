@@ -100,4 +100,7 @@
                    jar:file:milstd2525-symbols.zip!  (local zip archive)  -->
     <Property name="gov.nasa.worldwind.avkey.MilStd2525IconRetrieverPath"
               value="https://worldwind.arc.nasa.gov/milstd2525c/rev1/"/>
+
+    <!-- PCM - to improve image quality of MercatorTiledImageLayer on contemporary DPI displays -->
+    <Property name="gov.nasa.worldwind.avkey.MapTileSplitScale" value="1.5" />
 </WorldWindConfiguration>

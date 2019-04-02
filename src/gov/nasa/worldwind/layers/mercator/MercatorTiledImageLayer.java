@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.layers.mercator;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Cylinder;
 import gov.nasa.worldwind.globes.Globe;
@@ -43,7 +44,8 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     private boolean retainLevelZeroTiles = false;
     private String tileCountName;
     @SuppressWarnings({"FieldCanBeLocal"})
-    private double splitScale = 0.9; // TODO: Make configurable
+    //private double splitScale = 0.9; // TODO: Make configurable
+    private double splitScale = Configuration.getDoubleValue(AVKey.MAP_TILE_SPLIT_SCALE);  // PCM
     private boolean useMipMaps = false;
     private ArrayList<String> supportedImageFormats = new ArrayList<String>();
 
@@ -910,8 +912,9 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
         {
             for (MercatorTextureTile tile : row)
             {
-                if (tile == null)
+                if (tile == null) {
                     continue;
+                }
 
                 BufferedImage tileImage;
                 try
@@ -1063,8 +1066,9 @@ public abstract class MercatorTiledImageLayer extends AbstractLayer
     {
         // Read the image from disk.
         BufferedImage image = this.requestImage(tile, mimeType);
-        if (image != null)
+        if (image != null) {
             return image;
+        }
 
         // Retrieve it from the net since it's not on disk.
         this.downloadImage(tile, mimeType);

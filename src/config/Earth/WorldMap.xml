@@ -1,0 +1,44 @@
+<Layer version="1" layerType="TiledImageLayer">
+    <DisplayName>WorldMap</DisplayName>
+    <Service serviceName="OGC:WMS" version="1.3">
+        <GetCapabilitiesURL>http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap</GetCapabilitiesURL>
+        <GetMapURL>http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap</GetMapURL>
+        <LayerNames>Bathymetry,Topography,Builtup areas,Coastlines,Hillshading,Rivers</LayerNames> -->
+        <!-- <LayerNames>Bathymetry,Topography,Builtup areas,Coastlines,Hillshading,Cities,Rivers,Streams,Highways,Roads,Settlements</LayerNames> -->
+    </Service>
+    <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
+    <!-- day month year hours:minutes:seconds timezone -->
+    <DataCacheName>Earth/WorldMap</DataCacheName>
+    <ImageFormat>image/png</ImageFormat>
+    <AvailableImageFormats>
+        <ImageFormat>image/png</ImageFormat>
+        <ImageFormat>image/jpeg</ImageFormat>
+    </AvailableImageFormats>
+    <FormatSuffix>.png</FormatSuffix>
+    <!-- <NumLevels count="10" numEmpty="0"/> -->
+    <TileOrigin>
+        <LatLon units="degrees" latitude="-90" longitude="-180"/>
+    </TileOrigin>
+    <LevelZeroTileDelta>
+        <LatLon units="degrees" latitude="45" longitude="45"/>
+    </LevelZeroTileDelta>
+    <TileSize>
+        <!-- <Dimension width="256" height="256"/> -->
+        <Dimension width="128" height="128"/>
+    </TileSize>
+    <Sector>
+        <SouthWest>
+            <LatLon units="degrees" latitude="-90" longitude="-180"/>
+        </SouthWest>
+        <NorthEast>
+            <LatLon units="degrees" latitude="90" longitude="180"/>
+        </NorthEast>
+    </Sector>
+    <UseTransparentTextures>true</UseTransparentTextures>
+
+    <RetrievalTimeouts>
+        <ReadTimeout>
+            <Time units="milliseconds" value="20000"/>
+        </ReadTimeout>
+    </RetrievalTimeouts>
+</Layer>

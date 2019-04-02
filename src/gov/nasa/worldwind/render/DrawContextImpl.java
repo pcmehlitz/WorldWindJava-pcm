@@ -95,51 +95,76 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     protected ClutterFilter clutterFilter;
 //    protected Map<String, GroupingFilter> groupingFilters;
 
-    protected static class OrderedRenderableEntry
-    {
-        protected OrderedRenderable or;
-        protected double distanceFromEye;
-        protected long time;
-        protected int globeOffset;
-        protected SectorGeometryList surfaceGeometry;
+    protected boolean viewStateChanged = true;
 
-        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, long insertionTime, DrawContext dc)
-        {
-            this.or = orderedRenderable;
-            this.distanceFromEye = orderedRenderable.getDistanceFromEye();
-            this.time = insertionTime;
-            if (dc.isContinuous2DGlobe())
-            {
-                this.globeOffset = ((Globe2D) dc.getGlobe()).getOffset();
-                this.surfaceGeometry = dc.getSurfaceGeometry();
-            }
+    public static class OrderedRenderableEntry implements SelfOrderedRenderable {
+        private OrderedRenderable orderedRenderable;
+        private SelfOrderedRenderable next;
+        private boolean isBehind = false;
+
+        OrderedRenderableEntry (OrderedRenderable r) {
+            orderedRenderable = r;
         }
 
-        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double distanceFromEye, long insertionTime,
-            DrawContext dc)
-        {
-            this.or = orderedRenderable;
-            this.distanceFromEye = distanceFromEye;
-            this.time = insertionTime;
-            if (dc.isContinuous2DGlobe())
-            {
-                this.globeOffset = ((Globe2D) dc.getGlobe()).getOffset();
-                this.surfaceGeometry = dc.getSurfaceGeometry();
-            }
-        }
+        public void setNext (SelfOrderedRenderable r) { next = r; }
+        public SelfOrderedRenderable getNext() { return next; }
+        public boolean isBehind() { return isBehind; }
+        public void setBehind (boolean cond) { isBehind = cond; }
+
+        // delegate OrderedRenderable calls
+        public double getDistanceFromEye() { return orderedRenderable.getDistanceFromEye(); }
+        public void pick(DrawContext dc, Point pickPoint) { orderedRenderable.pick(dc,pickPoint); }
+        public void render(DrawContext dc) { orderedRenderable.render(dc); }
     }
 
-    protected PriorityQueue<OrderedRenderableEntry> orderedRenderables =
-        new PriorityQueue<OrderedRenderableEntry>(100, new Comparator<OrderedRenderableEntry>()
-        {
-            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
-            {
-                double eA = orA.distanceFromEye;
-                double eB = orB.distanceFromEye;
+//    protected static class OrderedRenderableEntry
+//    {
+//        protected OrderedRenderable or;
+//        protected double distanceFromEye;
+//        protected long time;
+//        protected int globeOffset;
+//        protected SectorGeometryList surfaceGeometry;
+//
+//        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, long insertionTime, DrawContext dc)
+//        {
+//            this.or = orderedRenderable;
+//            this.distanceFromEye = orderedRenderable.getDistanceFromEye();
+//            this.time = insertionTime;
+//            if (dc.isContinuous2DGlobe())
+//            {
+//                this.globeOffset = ((Globe2D) dc.getGlobe()).getOffset();
+//                this.surfaceGeometry = dc.getSurfaceGeometry();
+//            }
+//        }
+//
+//        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double distanceFromEye, long insertionTime,
+//            DrawContext dc)
+//        {
+//            this.or = orderedRenderable;
+//            this.distanceFromEye = distanceFromEye;
+//            this.time = insertionTime;
+//            if (dc.isContinuous2DGlobe())
+//            {
+//                this.globeOffset = ((Globe2D) dc.getGlobe()).getOffset();
+//                this.surfaceGeometry = dc.getSurfaceGeometry();
+//            }
+//        }
+//    }
 
-                return eA > eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
-            }
-        });
+//    protected PriorityQueue<OrderedRenderableEntry> orderedRenderables =
+//        new PriorityQueue<OrderedRenderableEntry>(100, new Comparator<OrderedRenderableEntry>()
+//        {
+//            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
+//            {
+//                double eA = orA.distanceFromEye;
+//                double eB = orB.distanceFromEye;
+//
+//                return eA > eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
+//            }
+//        });
+
+    protected SelfOrderedRenderable firstRenderable = null;
+
     // Use a standard Queue to store the ordered surface object renderables. Ordered surface renderables are processed
     // in the order they were submitted.
     protected Queue<OrderedRenderable> orderedSurfaceRenderables = new ArrayDeque<OrderedRenderable>();
@@ -213,8 +238,9 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
         this.pickedObjects.clear();
         this.objectsInPickRect.clear();
-        this.orderedRenderables.clear();
-        this.orderedSurfaceRenderables.clear();
+
+        clearOrderedRenderables();
+
         this.uniquePickNumber = 0;
         this.deepPickingMode = false;
         this.redrawRequested = 0;
@@ -222,6 +248,13 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         this.pickFrustumList.clear();
 
         this.currentLayer = null;
+    }
+
+    protected void clearOrderedRenderables() {
+        //this.orderedRenderables.clear();
+        firstRenderable = null;
+
+        orderedSurfaceRenderables.clear();
     }
 
     public final void setModel(Model model)
@@ -279,6 +312,14 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     public final View getView()
     {
         return this.view;
+    }
+
+    public boolean getViewStateChanged() {
+        return viewStateChanged;
+    }
+
+    public void setViewStateChanged (boolean hasChanged) {
+        viewStateChanged = hasChanged;
     }
 
     public final void setGLContext(GLContext glContext)
@@ -466,7 +507,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         this.objectsInPickRect.add(pickedObject);
     }
 
-    public Color getUniquePickColor()
+    public int getUniquePickColorCode()
     {
         this.uniquePickNumber++;
 
@@ -481,7 +522,13 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
                 this.uniquePickNumber++;
         }
 
-        return new Color(this.uniquePickNumber, true); // has alpha
+        return this.uniquePickNumber;
+    }
+
+    public Color getUniquePickColor()
+    {
+        //return new Color(this.uniquePickNumber, true); // has alpha
+        return new Color(getUniquePickColorCode(), true);
     }
 
     public Color getUniquePickColorRange(int count)
@@ -677,54 +724,99 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 
     public void addOrderedRenderable(OrderedRenderable orderedRenderable)
     {
-        if (null == orderedRenderable)
-        {
+        if (null == orderedRenderable) {
             String msg = Logging.getMessage("nullValue.OrderedRenderable");
             Logging.logger().warning(msg);
             return; // benign event
         }
 
-        this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, System.nanoTime(), this));
+        //this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, System.nanoTime(), this));
+        addOrderedRenderable(orderedRenderable, false);
     }
 
     /** {@inheritDoc} */
-    public void addOrderedRenderable(OrderedRenderable orderedRenderable, boolean isBehind)
+    public void addOrderedRenderable (OrderedRenderable orderedRenderable, boolean isBehind)
     {
-        if (null == orderedRenderable)
-        {
+        if (null == orderedRenderable) {
             String msg = Logging.getMessage("nullValue.OrderedRenderable");
             Logging.logger().warning(msg);
             return; // benign event
         }
+
+        SelfOrderedRenderable sor = (orderedRenderable instanceof SelfOrderedRenderable) ?
+                (SelfOrderedRenderable)orderedRenderable : new OrderedRenderableEntry(orderedRenderable);
 
         // If the caller has specified that the ordered renderable should be treated as behind other ordered
         // renderables, then treat it as having an eye distance of Double.MAX_VALUE and ignore the actual eye distance.
         // If multiple ordered renderables are added in this way, they are drawn according to the order in which they
         // are added.
-        double eyeDistance = isBehind ? Double.MAX_VALUE : orderedRenderable.getDistanceFromEye();
-        this.orderedRenderables.add(
-            new OrderedRenderableEntry(orderedRenderable, eyeDistance, System.nanoTime(), this));
-    }
 
-    public OrderedRenderable peekOrderedRenderables()
-    {
-        OrderedRenderableEntry ore = this.orderedRenderables.peek();
+        if (isBehind){ // no need to compare
+            sor.setBehind(true);
+            sor.setNext(firstRenderable);
+            firstRenderable = sor;
 
-        return ore != null ? ore.or : null;
-    }
+        } else {
+            sor.setBehind(false);
+            if (firstRenderable == null) {
+                firstRenderable = sor;
+                sor.setNext(null);
 
-    public OrderedRenderable pollOrderedRenderables()
-    {
-        OrderedRenderableEntry ore = this.orderedRenderables.poll();
+            } else {
+                SelfOrderedRenderable r = firstRenderable, rLast = null;
+                while (r != null) {
+                    int c = sor.compareTo(r);
 
-        if (ore != null && this.isContinuous2DGlobe())
-        {
-            ((Globe2D) this.getGlobe()).setOffset(ore.globeOffset);
-            this.setSurfaceGeometry(ore.surfaceGeometry);
+                    if (c >= 0 || r.isBehind()){
+                        rLast = r;
+                        r = r.getNext();
+
+                    } else { // sort in
+                        sor.setNext(r);
+                        if (rLast == null) {
+                            firstRenderable = sor;
+                        } else {
+                            rLast.setNext(sor);
+                        }
+                        return;
+                    }
+                }
+                rLast.setNext(sor);
+                sor.setNext(null);
+            }
         }
 
-        return ore != null ? ore.or : null;
+        //double eyeDistance = isBehind ? Double.MAX_VALUE : orderedRenderable.getDistanceFromEye();
+        //this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, eyeDistance, System.nanoTime(), this));
     }
+
+    public OrderedRenderable peekOrderedRenderables() {
+        //OrderedRenderableEntry ore = this.orderedRenderables.peek();
+        //return ore != null ? ore.or : null;
+        return firstRenderable;
+    }
+
+    public OrderedRenderable pollOrderedRenderables() {
+        SelfOrderedRenderable r = firstRenderable;
+        if (r != null) {
+            firstRenderable = r.getNext();
+            r.setNext(null);  // avoid memory leaks
+        }
+        return r;
+
+        // TODO - add continuous2DGlobe case
+
+//        OrderedRenderableEntry ore = this.orderedRenderables.poll();
+//
+//        if (ore != null && this.isContinuous2DGlobe())
+//        {
+//            ((Globe2D) this.getGlobe()).setOffset(ore.globeOffset);
+//            this.setSurfaceGeometry(ore.surfaceGeometry);
+//        }
+//
+//        return ore != null ? ore.or : null;
+    }
+
 //
 //    public void applyDeclutterFilter2()
 //    {
@@ -788,41 +880,68 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
             return;
 
         // Collect all the active declutterables.
-        ArrayList<OrderedRenderableEntry> declutterableArray = new ArrayList<OrderedRenderableEntry>();
-        for (OrderedRenderableEntry ore : this.orderedRenderables)
-        {
-            if (ore.or instanceof Declutterable && ((Declutterable) ore.or).isEnableDecluttering())
-                declutterableArray.add(ore);
+//        ArrayList<OrderedRenderableEntry> declutterableArray = new ArrayList<OrderedRenderableEntry>();
+//        for (OrderedRenderableEntry ore : this.orderedRenderables)
+//        {
+//            if (ore.or instanceof Declutterable && ((Declutterable) ore.or).isEnableDecluttering())
+//                declutterableArray.add(ore);
+//        }
+
+        List<Declutterable> declutterables = null; // deferred init
+        SelfOrderedRenderable rLast = null;
+        for (SelfOrderedRenderable r = firstRenderable; r != null; r = r.getNext()) {
+            if (r instanceof Declutterable) {
+                Declutterable dec = (Declutterable)r;
+                if (dec.isEnableDecluttering()) {
+                    if (declutterables == null) declutterables = new ArrayList<>();
+                    declutterables.add(dec);
+
+                    if (rLast != null) { // remove from ordered renderables
+                        rLast.setNext(r.getNext());
+                    } else {
+                        firstRenderable = r.getNext();
+                    }
+                    r.setNext(null); // avoid memory leaks
+                }
+            }
+
+            rLast = r;
+        }
+        // we don't have to sort since we preserved the order of entry
+
+        if (declutterables != null) { // only initialized if non-empty
+            getClutterFilter().apply(this, declutterables);
         }
 
         // Sort the declutterables front-to-back.
-        Collections.sort(declutterableArray, new Comparator<OrderedRenderableEntry>()
-        {
-            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
-            {
-                double eA = orA.distanceFromEye;
-                double eB = orB.distanceFromEye;
+//        Collections.sort(declutterableArray, new Comparator<OrderedRenderableEntry>()
+//        {
+//            public int compare(OrderedRenderableEntry orA, OrderedRenderableEntry orB)
+//            {
+//                double eA = orA.distanceFromEye;
+//                double eB = orB.distanceFromEye;
+//
+//                return eA < eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
+//            }
+//        });
 
-                return eA < eB ? -1 : eA == eB ? (orA.time < orB.time ? -1 : orA.time == orB.time ? 0 : 1) : 1;
-            }
-        });
-
-        if (declutterableArray.size() == 0)
-            return;
+//        if (declutterableArray.size() == 0)
+//            return;
 
         // Prepare the declutterable list for the filter and remove eliminated ordered renderables from the renderable
         // list. The clutter filter will add those it wants displayed back to the list, or it will add some other
         // representation.
-        List<Declutterable> declutterables = new ArrayList<Declutterable>(declutterableArray.size());
-        for (OrderedRenderableEntry ore : declutterableArray)
-        {
-            declutterables.add((Declutterable) ore.or);
+        //List<Declutterable> declutterables = new ArrayList<Declutterable>(declutterableArray.size());
 
-            orderedRenderables.remove(ore);
-        }
+//        for (OrderedRenderableEntry ore : declutterableArray)
+//        {
+//            declutterables.add((Declutterable) ore.or);
+//
+//            orderedRenderables.remove(ore);
+//        }
 
-        // Tell the filter to apply itself and draw whatever it draws.
-        this.getClutterFilter().apply(this, declutterables);
+        // Tell the filter to apply itself and draw whatever it draws
+//        this.getClutterFilter().apply(this, declutterables);
     }
 
     /** {@inheritDoc} */

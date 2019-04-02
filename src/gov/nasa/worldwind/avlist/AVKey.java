@@ -216,6 +216,8 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String MARS_ELEVATION_MODEL_CLASS_NAME = "gov.nasa.worldwind.avkey.MarsElevationModelClassName";
     final String MARS_ELEVATION_MODEL_CONFIG_FILE = "gov.nasa.worldwind.avkey.MarsElevationModelConfigFile";
 
+    final String MAP_TILE_SPLIT_SCALE = "gov.nasa.worldwind.avkey.MapTileSplitScale"; // PCM
+
     /**
      * Describes the maximum number of attempts to make when downloading a resource before attempts are suspended.
      * Attempts are restarted after the interval specified by {@link #MIN_ABSENT_TILE_CHECK_INTERVAL}.
