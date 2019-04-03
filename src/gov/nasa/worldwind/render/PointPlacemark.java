@@ -51,6 +51,18 @@ public class PointPlacemark extends WWObjectImpl
     implements Renderable, Locatable, Movable, Highlightable, Exportable, Draggable
 {
     /**
+    private SelfOrderedRenderable next = null;
+    public void setNext (SelfOrderedRenderable n) { next = n; }
+    public SelfOrderedRenderable getNext() { return next; }
+
+    private boolean isBehind = false;
+    public boolean isBehind() { return isBehind; }
+    public void setBehind (boolean cond) { isBehind = cond; }
+
+    public void pick (DrawContext dc, Point pt) { pick(dc,pt,null); } // opm ??
+     **/
+
+    /**
      * An interface to enable application selection of placemark level of detail.
      */
     public interface LODSelector

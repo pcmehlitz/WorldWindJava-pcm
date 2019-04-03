@@ -18,5 +18,7 @@ public class StamenTerrainLayer extends PlainMapTileLayer {
                 new Dimension(256,256),
                 "Earth/OSM-Mercator/StamenTerrain",
                 ".png");
+        setEmptyTileSize(129); // might depend on tile size
+        setFallbackColor(new Color(152,203,203)); // StamenTerrain water color
     }
 }

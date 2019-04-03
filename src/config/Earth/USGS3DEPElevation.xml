@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ElevationModel version="1" modelType="Compound">
+    <ElevationModel version="1">
+        <DisplayName>USGS 3DEPElevation</DisplayName>
+        <Service serviceName="OGC:WMS" version="1.3">
+            <GetCapabilitiesURL>https://elevation.nationalmap.gov/arcgis/services/3DEPElevation/ImageServer/WMSServer</GetCapabilitiesURL>
+            <GetMapURL>https://elevation.nationalmap.gov/arcgis/services/3DEPElevation/ImageServer/WMSServer</GetMapURL>
+            <LayerNames>3DEPElevation:None</LayerNames>
+        </Service>
+        <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
+        <!-- day month year hours:minutes:seconds timezone -->
+        <LastUpdate>16 01 2014 20:00:00 GMT</LastUpdate>
+        <DataCacheName>Earth/3DEPElevation</DataCacheName>
+
+        <ImageFormat>image/bil</ImageFormat>
+        <FormatSuffix>.bil</FormatSuffix>
+        <DataType type="Float32" byteOrder="LittleEndian"/>
+
+        <!--
+        <ImageFormat>image/png</ImageFormat>
+        <DataType type="Float32" byteOrder="LittleEndian"/>
+        <FormatSuffix>.png</FormatSuffix>
+        -->
+
+        <DataDetailHint>0.20</DataDetailHint>
+        <ExtremeElevations min="-14380" max="8850">
+            <FileName>config/SRTM30Plus_ExtremeElevations_5.bil</FileName>
+        </ExtremeElevations>
+        <NumLevels count="12" numEmpty="0"/>
+        <TileOrigin>
+            <LatLon units="degrees" latitude="-90" longitude="-180"/>
+        </TileOrigin>
+        <LevelZeroTileDelta>
+            <LatLon units="degrees" latitude="20" longitude="20"/>
+        </LevelZeroTileDelta>
+        <TileSize>
+            <Dimension width="256" height="256"/>
+        </TileSize>
+        <Sector>
+            <SouthWest>
+                <LatLon units="degrees" latitude="-15.001663" longitude="-179.999989"/>
+            </SouthWest>
+            <NorthEast>
+                <LatLon units="degrees" latitude="84.001679" longitude="179.999993"/>
+            </NorthEast>
+        </Sector>
+    </ElevationModel>
+</ElevationModel>

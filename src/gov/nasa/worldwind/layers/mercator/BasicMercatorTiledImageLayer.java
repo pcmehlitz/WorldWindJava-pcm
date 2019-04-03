@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
  */
 public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
 {
-    private final Object fileLock = new Object();
+    protected final Object fileLock = new Object();
 
     public BasicMercatorTiledImageLayer(LevelSet levelSet)
     {
@@ -72,8 +72,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         this.getRequestQ().add(task);
     }
 
-    private static class RequestTask implements Runnable,
-        Comparable<RequestTask>
+    protected static class RequestTask implements Runnable, Comparable<RequestTask>
     {
         private final BasicMercatorTiledImageLayer layer;
         private final MercatorTextureTile tile;
@@ -159,7 +158,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         }
     }
 
-    private boolean isTextureExpired(MercatorTextureTile tile,
+    protected boolean isTextureExpired(MercatorTextureTile tile,
         java.net.URL textureURL)
     {
         if (!WWIO.isFileOutOfDate(textureURL, tile.getLevel().getExpiryTime()))
@@ -173,8 +172,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         return true;
     }
 
-    private boolean loadTexture(MercatorTextureTile tile,
-        java.net.URL textureURL)
+    protected boolean loadTexture(MercatorTextureTile tile, java.net.URL textureURL)
     {
         TextureData textureData;
 
@@ -193,7 +191,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         return true;
     }
 
-    private static TextureData readTexture(java.net.URL url, boolean useMipMaps)
+    protected static TextureData readTexture(java.net.URL url, boolean useMipMaps)
     {
         try
         {
@@ -207,7 +205,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         }
     }
 
-    private void addTileToCache(MercatorTextureTile tile)
+    protected void addTileToCache(MercatorTextureTile tile)
     {
         WorldWind.getMemoryCache(MercatorTextureTile.class.getName()).add(
             tile.getTileKey(), tile);
@@ -269,7 +267,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
             tile.getPriority());
     }
 
-    private void saveBuffer(java.nio.ByteBuffer buffer, java.io.File outFile)
+    protected void saveBuffer(java.nio.ByteBuffer buffer, java.io.File outFile)
         throws java.io.IOException
     {
         synchronized (this.fileLock) // synchronized with read of file in RequestTask.run()
@@ -278,7 +276,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         }
     }
 
-    private static class DownloadPostProcessor implements
+    protected static class DownloadPostProcessor implements
         RetrievalPostProcessor
     {
         // TODO: Rewrite this inner class, factoring out the generic parts.
@@ -431,7 +429,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         return image;
     }
 
-    private BufferedImage convertBufferToImage(ByteBuffer buffer)
+    protected BufferedImage convertBufferToImage(ByteBuffer buffer)
     {
         try
         {
@@ -444,7 +442,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         }
     }
 
-    private boolean transformAndSave(BufferedImage image, MercatorSector sector,
+    protected boolean transformAndSave(BufferedImage image, MercatorSector sector,
         File outFile)
     {
         try
@@ -463,7 +461,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
         }
     }
 
-    private BufferedImage transform(BufferedImage image, MercatorSector sector)
+    protected BufferedImage transform(BufferedImage image, MercatorSector sector)
     {
         int type = image.getType();
         if (type == 0)
