@@ -117,16 +117,16 @@ public class PlacemarkClutterFilter implements ClutterFilter
     {
         for (Map.Entry<Rectangle2D, List<Declutterable>> entry : this.shapeMap.entrySet())
         {
-            List<PointPlacemark.OrderedPlacemark> placemarks = null;
+            List<PointPlacemark> placemarks = null;
             Declutterable firstShape = null;
 
             for (Declutterable shape : entry.getValue())
             {
-                if (shape instanceof PointPlacemark.OrderedPlacemark)
+                if (shape instanceof PointPlacemark)
                 {
                     if (placemarks == null)
-                        placemarks = new ArrayList<PointPlacemark.OrderedPlacemark>();
-                    placemarks.add((PointPlacemark.OrderedPlacemark) shape);
+                        placemarks = new ArrayList<PointPlacemark>();
+                    placemarks.add((PointPlacemark) shape);
                 }
                 else
                 {
@@ -144,7 +144,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
             {
                 double angle = -placemarks.size(); // increments Y position of placemark label
 
-                for (PointPlacemark.OrderedPlacemark pp : placemarks)
+                for (PointPlacemark pp : placemarks)
                 {
                     angle += 1;
                     dc.addOrderedRenderable(new DeclutteredLabel(angle, pp, entry.getKey()));
@@ -162,11 +162,11 @@ public class PlacemarkClutterFilter implements ClutterFilter
     protected static class DeclutteredLabel implements OrderedRenderable
     {
         protected double angle;
-        protected PointPlacemark.OrderedPlacemark opm;
+        protected PointPlacemark opm;
         protected Rectangle2D region;
         protected PickSupport pickSupport;
 
-        public DeclutteredLabel(double angle, PointPlacemark.OrderedPlacemark opm, Rectangle2D region)
+        public DeclutteredLabel(double angle, PointPlacemark opm, Rectangle2D region)
         {
             this.angle = angle;
             this.opm = opm;
@@ -182,7 +182,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
         @Override
         public void pick(DrawContext dc, Point pickPoint)
         {
-            if (this.opm.getPlacemark().isEnableLabelPicking())
+            if (this.opm.isEnableLabelPicking())
             {
                 if (this.pickSupport == null)
                     this.pickSupport = new PickSupport();
@@ -204,7 +204,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
         public void render(DrawContext dc)
         {
             GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-            PointPlacemarkAttributes attrs = this.opm.getPlacemark().getAttributes();
+            PointPlacemarkAttributes attrs = this.opm.getAttributes();
             Font font = attrs != null ? attrs.getLabelFont() : null;
             if (font == null)
                 font = PointPlacemarkAttributes.DEFAULT_LABEL_FONT;
@@ -246,7 +246,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 Vec4 textPoint = new Vec4(x + dx, y + dy, 0);
 
                 osh.pushModelviewIdentity(gl);
-                this.drawDeclutterLabel(dc, font, textPoint, this.opm.getPlacemark().getLabelText());
+                this.drawDeclutterLabel(dc, font, textPoint, this.opm.getLabelText());
 
                 if (!dc.isPickingMode())
                 {
@@ -277,9 +277,9 @@ public class PlacemarkClutterFilter implements ClutterFilter
             {
                 // Pick the text box, not just the text.
                 Color pickColor = dc.getUniquePickColor();
-                Object delegateOwner = this.opm.getPlacemark().getDelegateOwner();
+                Object delegateOwner = this.opm.getDelegateOwner();
                 PickedObject po = new PickedObject(pickColor.getRGB(),
-                    delegateOwner != null ? delegateOwner : this.opm.getPlacemark());
+                    delegateOwner != null ? delegateOwner : this.opm);
                 po.setValue(AVKey.PICKED_OBJECT_ID, AVKey.LABEL);
                 this.pickSupport.addPickableObject(po);
                 gl.glColor3ub((byte) pickColor.getRed(), (byte) pickColor.getGreen(), (byte) pickColor.getBlue());
@@ -293,7 +293,7 @@ public class PlacemarkClutterFilter implements ClutterFilter
                 TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(), font);
                 try
                 {
-                    PointPlacemark placemark = this.opm.getPlacemark();
+                    PointPlacemark placemark = this.opm;
                     Color textColor = Color.WHITE;
                     if (placemark.isHighlighted() && placemark.getHighlightAttributes() != null
                         && placemark.getHighlightAttributes().getLabelColor() != null)
