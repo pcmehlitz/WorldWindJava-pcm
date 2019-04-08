@@ -635,14 +635,16 @@ public class PointPlacemark extends WWObjectImpl
                 return;
         }
 
-        if (dc.getCurrentLayer() != null) {
+        //if (dc.getCurrentLayer() != null) {
+        if (dc.isOrderedRenderingMode()) {
+            // this actually draws the ordered renderable during pick/display.
+            // we don't need to check frustum here because we only get here if
+            // the object was previously added to the dc (in the branch above)
+            drawOrderedRenderable(dc);
+
+        } else {
             // this is during the Renderable ordering phase
             isRenderable = this.makeOrderedRenderable(dc);
-        } else {
-            // this actually draws the ordered renderable during pick/display
-            //if (isRenderable && intersectsFrustum(dc)) {
-                drawOrderedRenderable(dc);
-            //}
         }
     }
 
@@ -658,6 +660,7 @@ public class PointPlacemark extends WWObjectImpl
      */
     protected boolean makeOrderedRenderable (DrawContext dc) {
         long currentFrameTimeStamp = dc.getFrameTimeStamp();
+
         if (currentFrameTimeStamp != this.frameNumber || dc.isContinuous2DGlobe()) {
 
             this.computePlacemarkPoints(dc);
@@ -693,12 +696,15 @@ public class PointPlacemark extends WWObjectImpl
 
             // note - we can't check for frustum here because there are different ones
             // in pick and draw mode
-            if (intersectsFrustum(dc))
+            if (intersectsFrustum(dc)) {
                 dc.addOrderedRenderable(this);
+            }
+
             return true;
 
-        } else {
-            if (isRenderable) {
+        } else { // we looked at this frame before, no need to recompute coords/bounds
+            // note that the frustum changes between pick/draw mode
+            if (isRenderable && intersectsFrustum(dc)) {
                 dc.addOrderedRenderable(this);
             }
             return isRenderable;

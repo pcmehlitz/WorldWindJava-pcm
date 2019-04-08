@@ -164,6 +164,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
 //        });
 
     protected SelfOrderedRenderable firstRenderable = null;
+    protected int nRenderables = 0;
 
     // Use a standard Queue to store the ordered surface object renderables. Ordered surface renderables are processed
     // in the order they were submitted.
@@ -253,6 +254,7 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
     protected void clearOrderedRenderables() {
         //this.orderedRenderables.clear();
         firstRenderable = null;
+        nRenderables = 0;
 
         orderedSurfaceRenderables.clear();
     }
@@ -746,6 +748,8 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         SelfOrderedRenderable sor = (orderedRenderable instanceof SelfOrderedRenderable) ?
                 (SelfOrderedRenderable)orderedRenderable : new OrderedRenderableEntry(orderedRenderable);
 
+        nRenderables++;
+
         // If the caller has specified that the ordered renderable should be treated as behind other ordered
         // renderables, then treat it as having an eye distance of Double.MAX_VALUE and ignore the actual eye distance.
         // If multiple ordered renderables are added in this way, they are drawn according to the order in which they
@@ -763,25 +767,25 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
                 sor.setNext(null);
 
             } else {
-                SelfOrderedRenderable r = firstRenderable, rLast = null;
+                SelfOrderedRenderable r = firstRenderable, rPrev = null;
                 while (r != null) {
                     int c = sor.compareTo(r);
 
                     if (c >= 0 || r.isBehind()){
-                        rLast = r;
+                        rPrev = r;
                         r = r.getNext();
 
                     } else { // sort in
                         sor.setNext(r);
-                        if (rLast == null) {
+                        if (rPrev == null) {
                             firstRenderable = sor;
                         } else {
-                            rLast.setNext(sor);
+                            rPrev.setNext(sor);
                         }
                         return;
                     }
                 }
-                rLast.setNext(sor);
+                rPrev.setNext(sor);
                 sor.setNext(null);
             }
         }
@@ -789,6 +793,8 @@ public class DrawContextImpl extends WWObjectImpl implements DrawContext
         //double eyeDistance = isBehind ? Double.MAX_VALUE : orderedRenderable.getDistanceFromEye();
         //this.orderedRenderables.add(new OrderedRenderableEntry(orderedRenderable, eyeDistance, System.nanoTime(), this));
     }
+
+    public int getNumberOfOrderedRenderables() { return nRenderables; }
 
     public OrderedRenderable peekOrderedRenderables() {
         //OrderedRenderableEntry ore = this.orderedRenderables.peek();

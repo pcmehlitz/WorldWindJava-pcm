@@ -950,6 +950,8 @@ public interface DrawContext extends WWObject, Disposable
      */
     void drawNormals(float length, FloatBuffer vBuf, FloatBuffer nBuf);
 
+    public int getNumberOfOrderedRenderables();
+
     /**
      * Returns the next {@link gov.nasa.worldwind.render.OrderedRenderable} on the ordered-renderable priority queue but
      * does not remove it from the queue.
