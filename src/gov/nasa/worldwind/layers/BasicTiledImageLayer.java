@@ -311,8 +311,9 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
 
     protected boolean isTextureFileExpired(TextureTile tile, java.net.URL textureURL, FileStore fileStore)
     {
-        if (!WWIO.isFileOutOfDate(textureURL, tile.getLevel().getExpiryTime()))
+        if (!WWIO.isFileOutOfDate(textureURL, tile.getLevel().getExpiryTime())) {
             return false;
+        }
 
         // The file has expired. Delete it.
         fileStore.removeFile(textureURL);

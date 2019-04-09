@@ -637,9 +637,9 @@ public class PointPlacemark extends WWObjectImpl
 
         //if (dc.getCurrentLayer() != null) {
         if (dc.isOrderedRenderingMode()) {
-            // this actually draws the ordered renderable during pick/display.
-            // we don't need to check frustum here because we only get here if
-            // the object was previously added to the dc (in the branch above)
+            // this draws the ordered renderable during pick/display.
+            // we don't need to check frustum because we only get here if
+            // the object was previously added to the dc (in the branch below)
             drawOrderedRenderable(dc);
 
         } else {

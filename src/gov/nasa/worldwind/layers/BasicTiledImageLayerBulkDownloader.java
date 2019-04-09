@@ -403,8 +403,9 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
 
     protected boolean isTileLocalOrAbsent(TextureTile tile)
     {
-        if (this.layer.getLevels().isResourceAbsent(tile))
+        if (this.layer.getLevels().isResourceAbsent(tile)) {
             return true;  // tile is absent
+        }
 
         URL url = this.fileStore.findFile(tile.getPath(), false);
 

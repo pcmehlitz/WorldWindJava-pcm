@@ -486,8 +486,9 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
 
     protected boolean isFileExpired(Tile tile, java.net.URL fileURL, FileStore fileStore)
     {
-        if (!WWIO.isFileOutOfDate(fileURL, tile.getLevel().getExpiryTime()))
+        if (!WWIO.isFileOutOfDate(fileURL, tile.getLevel().getExpiryTime())) {
             return false;
+        }
 
         // The file has expired. Delete it.
         fileStore.removeFile(fileURL);
