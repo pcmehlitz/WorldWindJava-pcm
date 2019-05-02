@@ -463,25 +463,29 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
 
     protected BufferedImage transform(BufferedImage image, MercatorSector sector)
     {
-        int type = image.getType();
-        if (type == 0)
-            type = BufferedImage.TYPE_INT_RGB;
-        BufferedImage trans = new BufferedImage(image.getWidth(), image
-            .getHeight(), type);
+        int type = BufferedImage.TYPE_INT_RGB; // pcm: image.getType() == 12 (BYTE_BINARY) causes white images
+
+        // pcm: avoid allocation and redundant computation in row/column loops
+
+        BufferedImage trans = new BufferedImage(image.getWidth(), image.getHeight(), type);
         double miny = sector.getMinLatPercent();
         double maxy = sector.getMaxLatPercent();
-        for (int y = 0; y < image.getHeight(); y++)
-        {
-            double sy = 1.0 - y / (double) (image.getHeight() - 1);
-            Angle lat = Angle.fromRadians(sy * sector.getDeltaLatRadians()
-                + sector.getMinLatitude().radians);
-            double dy = 1.0 - (MercatorSector.gudermannianInverse(lat) - miny)
-                / (maxy - miny);
-            dy = Math.max(0.0, Math.min(1.0, dy));
-            int iy = (int) (dy * (image.getHeight() - 1));
+        double sectorDeltaLatPercent = maxy - miny;
+        double sectorDeltaLat = sector.getDeltaLatRadians();
+        double minSectorLatitude = sector.getMinLatitude().radians;
 
-            for (int x = 0; x < image.getWidth(); x++)
-            {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        double h1 = h - 1;
+
+        for (int y = 0; y < h; y++) {
+            double sy = 1.0 - y / h1;
+            double lat = (sy * sectorDeltaLat) + minSectorLatitude;
+            double dy = 1.0 - (MercatorSector.gudermannianInverse(lat) - miny) / sectorDeltaLatPercent;
+            dy = Math.max(0.0, Math.min(1.0, dy));
+            int iy = (int) (dy * h1);
+
+            for (int x = 0; x < w; x++) {
                 trans.setRGB(x, y, image.getRGB(x, iy));
             }
         }

@@ -45,6 +45,10 @@ public class MercatorSector extends Sector
             / Math.PI;
     }
 
+    public static double gudermannianInverse(double latRadians) {
+        return Math.log(Math.tan(Math.PI / 4.0 + latRadians / 2.0)) / Math.PI;
+    }
+
     public static Angle gudermannian(double percent)
     {
         return Angle.fromRadians(Math.atan(Math.sinh(percent * Math.PI)));
