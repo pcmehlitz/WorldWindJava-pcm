@@ -49,7 +49,7 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
     protected long lastPerFrameInputTime;
 
     protected static final double DEFAULT_DRAG_SLOPE_FACTOR = 0.002;
-    protected static final long DEFAULT_PER_FRAME_INPUT_INTERVAL = 35L; // perform per frame input every 35 ms
+    protected static final long DEFAULT_PER_FRAME_INPUT_INTERVAL = 100L; // 35L; // perform per frame input every N ms
 
     // These constants are used by the device input handling routines to determine whether or not to
     // (1) generate view change events based on the current device state, or
@@ -655,35 +655,36 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
             this.onStopView();
     }
 
+    protected boolean handlePerFrameEvents (String action) {
+        // pcm - do we really want short-circuit eval here?
+        return (handlePerFrameKeyState(this.keyEventState, action) ||
+                handlePerFrameMouseState(this.keyEventState, action) ||
+                handlePerFrameAnimation(action));
+    }
+
     public void apply()
     {
         // Process per-frame input only when the World Window is the focus owner.
-        if (!this.isWorldWindowFocusOwner())
-        {
+        if (!this.isWorldWindowFocusOwner()) {
             return;
         }
 
         // Throttle the interval at which we process per-frame input, which is usually invoked each frame. This helps
         // balance the input response of high and low framerate applications.
         long now = System.currentTimeMillis();
-        long interval = now - this.lastPerFrameInputTime;
-        if (interval >= this.getPerFrameInputInterval())
-        {
-            this.handlePerFrameKeyState(this.keyEventState, GENERATE_EVENTS);
-            this.handlePerFrameMouseState(this.keyEventState, GENERATE_EVENTS);
-            this.handlePerFrameAnimation(GENERATE_EVENTS);
-            this.lastPerFrameInputTime = now;
-            this.getWorldWindow().redraw();
-            return;
-        }
+        long interval = now - lastPerFrameInputTime;
+        if (interval >= this.getPerFrameInputInterval()) {
+            if (handlePerFrameEvents(GENERATE_EVENTS)) {
+                getWorldWindow().redraw();
+            }
+            lastPerFrameInputTime = now;
 
-        // Determine whether or not the current key state would have generated a view change event. If so, issue
-        // a repaint event to give the per-frame input a chance to run again.
-        if (this.handlePerFrameKeyState(this.keyEventState, QUERY_EVENTS) ||
-            this.handlePerFrameMouseState(this.keyEventState, QUERY_EVENTS) ||
-            this.handlePerFrameAnimation(QUERY_EVENTS))
-        {
-            this.getWorldWindow().redraw();
+        } else {
+            // Determine whether or not the current key state would have generated a view change event. If so, issue
+            // a repaint event to give the per-frame input a chance to run again.
+            if (handlePerFrameEvents(QUERY_EVENTS)) {
+                getWorldWindow().redraw();
+            }
         }
     }
 

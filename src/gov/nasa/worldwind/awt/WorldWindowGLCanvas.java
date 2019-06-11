@@ -291,13 +291,14 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
         return this.wwd.getGpuResourceCache();
     }
 
-    public void redraw()
-    {
+    public void redraw() {
+        //System.out.println("@@@----------- redraw");
+        //Thread.dumpStack();
         this.repaint();
     }
 
-    public void redrawNow()
-    {
+    public void redrawNow() {
+
         this.wwd.redrawNow();
     }
 

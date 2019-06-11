@@ -41,8 +41,12 @@ public class BasicSceneController extends AbstractSceneController
         this.createPickFrustum(dc);
         this.createTerrain(dc);
         this.preRender(dc);
-        this.clearFrame(dc);
-        this.pick(dc);
+
+        if (!getView().isAnimating()) { // pcm - don't pick draw during animation
+            this.clearFrame(dc);
+            this.pick(dc);
+        }
+
         this.clearFrame(dc);
         this.draw(dc);
     }
