@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.cache.FileStoreSource;
 import gov.nasa.worldwind.cache.SessionCache;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.retrieve.*;
@@ -33,14 +34,17 @@ public class SessionCacheUtils
      *                           cache.
      * @param absentResourceList the absent resource list to update.
      * @param resourceID         the resource ID to use in the absent resource list.
+     * @param fsSource           optional fileStore source to read/write raw data from/to (null if none).
      * @param propertyListener   the property change listener which is fired when the retrieved data is available.
      * @param propertyName       the property name to fire when retrieved data is available.
      *
      * @throws IllegalArgumentException if any of the url, retrieval service, cache, or cache key are null.
      */
-    public static void retrieveSessionData(java.net.URL url, SessionCache cache, Object cacheKey,
-        AbsentResourceList absentResourceList, long resourceID, PropertyChangeListener propertyListener,
-        String propertyName)
+    public static void retrieveSessionData(java.net.URL url,
+                                           SessionCache cache, Object cacheKey,
+                                           AbsentResourceList absentResourceList, long resourceID,
+                                           FileStoreSource fsSource,
+                                           PropertyChangeListener propertyListener, String propertyName)
     {
         if (url == null)
         {
@@ -71,16 +75,21 @@ public class SessionCacheUtils
         }
 
         SessionCacheRetrievalPostProcessor postProcessor = new SessionCacheRetrievalPostProcessor(cache, cacheKey,
-            absentResourceList, resourceID, propertyListener, propertyName);
+            absentResourceList, resourceID, fsSource, propertyListener, propertyName);
         postProcessor.setName(url.toString());
 
-        Retriever retriever = URLRetriever.createRetriever(url, postProcessor);
-        try
-        {
-            retriever.call();
+        // pcm - check if we can retrieve contents from our FileStore
+        Retriever retriever;
+        if (fsSource != null && fsSource.exists()) {
+            retriever = new FileStoreRetriever(fsSource, postProcessor);
+        } else {
+            retriever = URLRetriever.createRetriever(url, postProcessor);
         }
-        catch (Exception e)
-        {
+
+        try {
+            retriever.call();
+
+        } catch (Exception e) {
             String message = Logging.getMessage("layers.TiledImageLayer.ExceptionRetrievingResources", url.toString());
             Logging.logger().log(java.util.logging.Level.SEVERE, message, e);
         }
@@ -131,6 +140,7 @@ public class SessionCacheUtils
      * @param cacheKey           the key to identify the object in the session cache.
      * @param absentResourceList the absent resource list to update.
      * @param resourceID         the resource ID to use in the absent resource list.
+     * @param fsSource           optional fileStore source to read/write raw data from/to (null if none)
      * @param propertyListener   the property change listener which is fired when the retrieved data is available.
      * @param propertyName       the property name to fire when retrieved data is available.
      *
@@ -138,9 +148,11 @@ public class SessionCacheUtils
      *
      * @throws IllegalArgumentException if either the url, retrieval service, cache or cache key are null.
      */
-    public static WMSCapabilities getOrRetrieveSessionCapabilities(java.net.URL url, SessionCache cache,
-        Object cacheKey, AbsentResourceList absentResourceList, long resourceID,
-        PropertyChangeListener propertyListener, String propertyName)
+    public static WMSCapabilities getOrRetrieveSessionCapabilities(java.net.URL url,
+                                                                   SessionCache cache, Object cacheKey,
+                                                                   AbsentResourceList absentResourceList, long resourceID,
+                                                                   FileStoreSource fsSource,
+                                                                   PropertyChangeListener propertyListener, String propertyName)
     {
         if (url == null)
         {
@@ -163,11 +175,12 @@ public class SessionCacheUtils
             throw new IllegalArgumentException(message);
         }
 
+        // check if it is already a cached object
         WMSCapabilities caps = getSessionCapabilities(cache, cacheKey, url.toString());
         if (caps != null)
             return caps;
 
-        retrieveSessionData(url, cache, cacheKey, absentResourceList, resourceID, propertyListener, propertyName);
+        retrieveSessionData(url, cache, cacheKey, absentResourceList, resourceID, fsSource, propertyListener, propertyName);
 
         // Try to get the caps after the retrieval attempt.
         return getSessionCapabilities(cache, cacheKey, url.toString());

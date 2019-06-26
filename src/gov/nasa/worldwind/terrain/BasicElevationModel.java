@@ -2025,12 +2025,14 @@ public class BasicElevationModel extends AbstractElevationModel implements BulkR
         // of hashCode() and equals() perform blocking IO calls. World Wind does not perform blocking calls during
         // rendering, and this method is likely to be called from the rendering thread.
         WMSCapabilities caps;
-        if (this.isNetworkRetrievalEnabled())
+        if (this.isNetworkRetrievalEnabled()) {
+            String dataCacheRoot = params.getStringValue(AVKey.DATA_CACHE_NAME);
+            FileStoreSource fsSrc = new FileStoreSource(dataFileStore, dataCacheRoot + "/capabilities.xml");
             caps = SessionCacheUtils.getOrRetrieveSessionCapabilities(url, WorldWind.getSessionCache(),
-                url.toString(), null, RESOURCE_ID_OGC_CAPABILITIES, null, null);
-        else
-            caps = SessionCacheUtils.getSessionCapabilities(WorldWind.getSessionCache(), url.toString(),
-                url.toString());
+                    url.toString(), null, RESOURCE_ID_OGC_CAPABILITIES, fsSrc, null, null);
+        } else {
+            caps = SessionCacheUtils.getSessionCapabilities(WorldWind.getSessionCache(), url.toString(), url.toString());
+        }
 
         // The OGC Capabilities resource retrieval is either currently running in another thread, or has failed. In
         // either case, return null indicating that that the retrieval was not successful, and we should try again

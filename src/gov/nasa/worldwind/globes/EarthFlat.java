@@ -28,6 +28,10 @@ public class EarthFlat extends FlatGlobe
                 "config/Earth/EarthElevations2.xml"));
     }
 
+    public EarthFlat (ElevationModel elevationModel) {
+        super(WGS84_EQUATORIAL_RADIUS, WGS84_POLAR_RADIUS, WGS84_ES,elevationModel);
+    }
+
     public String toString()
     {
         return "Flat Earth";

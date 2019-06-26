@@ -31,6 +31,10 @@ public class Earth extends EllipsoidalGlobe
                 "config/Earth/EarthElevations2.xml"));
     }
 
+    public Earth (ElevationModel elevationModel) {
+        super(WGS84_EQUATORIAL_RADIUS, WGS84_POLAR_RADIUS, WGS84_ES, elevationModel);
+    }
+
     public String toString()
     {
         return "Earth";

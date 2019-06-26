@@ -92,7 +92,7 @@ public interface FileStore extends WWObject
      * @param checkClassPath if true, the current classpath is first searched for the file, otherwise the classpath is
      *                       not searched.
      *
-     * @return a URL addressing the file if it is found.
+     * @return a URL addressing the file if it is found or null otherwise
      *
      * @throws IllegalArgumentException if the specified path is null.
      */

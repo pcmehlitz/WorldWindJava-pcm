@@ -5,11 +5,13 @@
  */
 package gov.nasa.worldwind.util;
 
+import gov.nasa.worldwind.cache.FileStoreSource;
 import gov.nasa.worldwind.cache.SessionCache;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
 import gov.nasa.worldwind.retrieve.*;
 
 import java.beans.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 
 /**
@@ -28,6 +30,7 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
     protected final Object cacheKey;
     protected final AbsentResourceList absentResourceList;
     protected final long resourceID;
+    protected FileStoreSource fsSource;
     protected final PropertyChangeListener propertyListener;
     protected final String propertyName;
 
@@ -39,12 +42,14 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
      * @param cacheKey           cache key to place the retrieved data under.
      * @param absentResourceList the absent resource list to update.
      * @param resourceID         the resource ID to use in the absent resource list.
+     * @param fsSource           optional fileStore source to read/write raw data from/to (null if none).
      * @param propertyListener   property listener to notify when the data is available. Can be null.
      * @param propertyName       property name to use for the property event when the data is available. Can be null.
      */
     public SessionCacheRetrievalPostProcessor(SessionCache cache, Object cacheKey,
-        AbsentResourceList absentResourceList, long resourceID,
-        PropertyChangeListener propertyListener, String propertyName)
+                                              AbsentResourceList absentResourceList, long resourceID,
+                                              FileStoreSource fsSource,
+                                              PropertyChangeListener propertyListener, String propertyName)
     {
         if (cache == null)
         {
@@ -64,6 +69,7 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
         this.cacheKey = cacheKey;
         this.absentResourceList = absentResourceList;
         this.resourceID = resourceID;
+        this.fsSource = fsSource;
         this.propertyListener = propertyListener;
         this.propertyName = propertyName;
     }
@@ -245,8 +251,13 @@ public class SessionCacheRetrievalPostProcessor implements RetrievalPostProcesso
 
     protected void handleWMSCapabilitiesContent(Retriever retriever) throws Exception
     {
-        WMSCapabilities caps = new WMSCapabilities(retriever.getBuffer());
+        ByteBuffer buf = retriever.getBuffer();
+        WMSCapabilities caps = new WMSCapabilities(buf);
         this.cache.put(this.cacheKey, caps.parse());
+
+        if (fsSource != null){
+            fsSource.storeFileContents(buf);
+        }
     }
 
     protected void handleUnknownContent(Retriever retriever) throws Exception
