@@ -12,7 +12,7 @@ shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.p
 //--- external dependencies
 val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
 val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
-val gdal = "org.gdal" % "gdal" % "2.4.0" // "2.3.0"
+val gdal = "org.gdal" % "gdal" % "3.0.0" // "2.4.0" // "2.3.0"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
@@ -55,7 +55,12 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
 
     publishArtifact in Test := false,
 
-    javacOptions in (Compile,doc) ++= Seq(
+    javacOptions ++= Seq(
+      "-source","8",
+      "-target","8"
+    ),
+
+    javacOptions in (Compile,doc) := Seq(
       "-J-Xmx1024m",
       "-splitindex",
       "-exclude","gov.nasa.worldwindx:gov.nasa.worldwind.util.webview",
