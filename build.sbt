@@ -41,7 +41,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     name := "worldwind-pcm",
     libraryDependencies ++= Seq(jogl,gluegen,gdal),
 
-    scalaVersion := "2.12.8", // not really used yet
+    scalaVersion := "2.13.0", // not really used yet
     crossPaths := false,
 
     // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
@@ -56,8 +56,8 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     publishArtifact in Test := false,
 
     javacOptions ++= Seq(
-      "-source","8",
-      "-target","8"
+      "-source","9",
+      "-target","9"
     ),
 
     javacOptions in (Compile,doc) := Seq(
