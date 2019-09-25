@@ -23,7 +23,7 @@ import gov.nasa.worldwind.globes.Globe;
  *
  * @author Garrett Headley, Patrick Murris
  */
-class MGRSCoordConverter
+public class MGRSCoordConverter
 {
     public static final int MGRS_NO_ERROR = 0;
     private static final int MGRS_LAT_ERROR = 0x0001;
