@@ -84,6 +84,8 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
       (compile in Compile).value
     },
 
+    publishTo := sonatypePublishToBundle.value,
+
     // NOTE - it is considered to be bad practice to publish fat jars but until jogl and gluegen
     // artifacts for version 2.4.x are published on Maven Central we have to resort to a fat jar unless
     // we add the jogl and gluegen jars as unmanaged depenencies to clients, which is worse in
@@ -91,9 +93,7 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     // updated (which will not require client build changes) but until then there is only the
     // choice between a bad and a worse option. 
     // The 2.3.2 artifacts do not work with contemporary Java versions (>12)
-    packageBin in Compile := assembly.value,
-
-    publishTo := sonatypePublishToBundle.value
+    packageBin in Compile := assembly.value
   )
 
 addArtifact(artifact in (Compile, assembly), assembly)
