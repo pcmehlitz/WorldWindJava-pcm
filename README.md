@@ -7,17 +7,27 @@ This repository is not intended as an alternative but rather as a staging area f
 
  * publishing artifacts to the [Central Repository](http://central.sonatype.org/)
  * potential bug fixes 
- * additional features
+ * (limited) additional features
  
 Please refer to the [original README.md](https://github.com/NASAWorldWind/WorldWindJava/blob/master/README.md) for
 general WorldWindJava information, which is also included in this distribution as a renamed
 `README_ORIGINAL.md`.
  
 The `master` branch of this repository is only intended to publish artifacts (jars) to local caches
-(~/.m2 or ~/.ivy2) and servers such as the [Central Repository](http://central.sonatype.org/).  It
-does *not* contain re-distributed 3rd party libraries, and hence does not support the [Apache
-Ant](http://ant.apache.org/) based build process of the original project, which depends on
-re-distributed jars.
+(~/.m2 or ~/.ivy2) and servers such as the [Central Repository](http://central.sonatype.org/). 
+ 
+As of 03/2020 we are now including the external dependencies within the project jar since
+there is no 2.4+ release for `jogl` and `gluegen` available on Maven Central, but the accompanying
+native libraries are required to run WorldWind on newer Java versions. We hence use the latest
+[deployment snapshots](https://jogamp.org/deployment) as unmanaged dependencies under lib/.
+
+Since distributing re-packaged 3rd party libraries is considered bad practice this will be
+reverted once new versions of the libraries are published on the 
+[Central Repository](http://central.sonatype.org/).
+ 
+Please note that we do not support the [Apache Ant](http://ant.apache.org/) based build process of
+the original project since the main purpose of this distribution is to provide dependency managed
+artifacts, not applications.
 
 To import the binary artifacts produced by the `master` branch, add the following line to your SBT build configuration:
 ```scala

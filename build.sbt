@@ -10,8 +10,10 @@ import scala.sys.process.Process
 shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
 //--- external dependencies
-val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
-val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
+// since there still is no 2.4 release of jogl-all and gluegen we have to turn this for now
+// into a unmanaged dependency. We will reverse this once they become available
+//val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
+//val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
 val gdal = "org.gdal" % "gdal" % "3.0.0" // "2.4.0" // "2.3.0"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
@@ -39,9 +41,9 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
   settings(
     organization := "com.github.pcmehlitz",
     name := "worldwind-pcm",
-    libraryDependencies ++= Seq(jogl,gluegen,gdal),
+    libraryDependencies ++= Seq(gdal), // Seq(jogl,gluegen,gdal),
 
-    scalaVersion := "2.13.0", // not really used yet
+    scalaVersion := "2.13.1", // not really used yet
     crossPaths := false,
 
     // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
@@ -80,8 +82,19 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
       IO.copy(fileMappings.map( e => (e._1, clsDir / e._2)))
 
       (compile in Compile).value
-    }
+    },
+
+    // NOTE - it is considered to be bad practice to publish fat jars but until jogl and gluegen
+    // artifacts for version 2.4.x are published on Maven Central we have to resort to a fat jar unless
+    // we add the jogl and gluegen jars as unmanaged depenencies to clients, which is worse in
+    // case these libs are only used by worldwind. We will revert when the jogamp artifacts are
+    // updated (which will not require client build changes) but until then there is only the
+    // choice between a bad and a worse option. 
+    // The 2.3.2 artifacts do not work with contemporary Java versions (>12)
+    packageBin in Compile := assembly.value
   )
+
+addArtifact(artifact in (Compile, assembly), assembly)
 
 //---- publishing meta data
 pomExtra in Global := {
