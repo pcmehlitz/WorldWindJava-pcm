@@ -91,7 +91,9 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     // updated (which will not require client build changes) but until then there is only the
     // choice between a bad and a worse option. 
     // The 2.3.2 artifacts do not work with contemporary Java versions (>12)
-    packageBin in Compile := assembly.value
+    packageBin in Compile := assembly.value,
+
+    publishTo := sonatypePublishToBundle.value
   )
 
 addArtifact(artifact in (Compile, assembly), assembly)
