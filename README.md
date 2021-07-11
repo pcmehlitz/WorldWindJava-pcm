@@ -39,7 +39,7 @@ to quickly assess changes made in the `master` branch.
  
 Current changes in WorldWindJava-PCM fall into four areas:
  
-(1) update to current versions of [JOGL](http://jogamp.org/) (2.3.2) and [GDAL](http://www.gdal.org/) (2.1.0)
+(1) update to current versions of [JOGL](http://jogamp.org/) and [GDAL](http://www.gdal.org/)
  
 (2) support publication of build artifacts to Maven Central, enabling client projects to 
 add WorldWindJava as a normal 3rd party dependency (e.g. in build systems such as SBT, Gradle
