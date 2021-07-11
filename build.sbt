@@ -10,11 +10,11 @@ import scala.sys.process.Process
 ThisBuild / shellPrompt := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
 //--- external dependencies
-// since there still is no 2.4 release of jogl-all and gluegen we have to turn this for now
-// into a unmanaged dependency. We will reverse this once they become available
+// since there still is no 2.4 release of jogl-all and gluegen on Maven Central we have to turn
+// this for now into a unmanaged dependency. We will reverse this once they become available
 //val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2" // "2.1.5-01"
 //val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2" // "2.1.5-01"
-val gdal = "org.gdal" % "gdal" % "3.0.0" // "2.4.0" // "2.3.0"
+val gdal = "org.gdal" % "gdal" % "3.3.0" // "3.0.0" // "2.4.0" // "2.3.0"
 
 val worldwindxPattern = ".*/worldwindx/.*".r
 
