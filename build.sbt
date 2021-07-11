@@ -7,7 +7,7 @@
 import scala.util.matching.Regex
 import scala.sys.process.Process
 
-shellPrompt in ThisBuild := { state => "[" + Project.extract(state).currentRef.project + "]> " }
+ThisBuild / shellPrompt := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
 //--- external dependencies
 // since there still is no 2.4 release of jogl-all and gluegen we have to turn this for now
@@ -43,26 +43,26 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     name := "worldwind-pcm",
     libraryDependencies ++= Seq(gdal), // Seq(jogl,gluegen,gdal),
 
-    scalaVersion := "2.13.1", // not really used yet
+    scalaVersion := "2.13.6", // not really used yet
     crossPaths := false,
 
     // our versioning scheme consists of the 3-number original WWJ version (e.g. 2.1.0) base, followed by
     // our Git revision number (e.g. 2.1.0.177)
     gitRev := Process("git rev-list --count HEAD", baseDirectory.value).lineStream.head,
     version := "2.1.0." + gitRev.value,
-    javaSource in Compile := baseDirectory.value / "src",
+    Compile / javaSource := baseDirectory.value / "src",
 
     // we omit example applications from the build artifacts
-    excludeFilter in Compile := fileFilter( worldwindxPattern),
+    Compile / excludeFilter := fileFilter( worldwindxPattern),
 
-    publishArtifact in Test := false,
+    Test / publishArtifact := false,
 
     javacOptions ++= Seq(
       "-source","9",
       "-target","9"
     ),
 
-    javacOptions in (Compile,doc) := Seq(
+    Compile / doc / javacOptions := Seq(
       "-J-Xmx1024m",
       "-splitindex",
       "-exclude","gov.nasa.worldwindx:gov.nasa.worldwind.util.webview",
@@ -71,17 +71,17 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
 
     // we have to copy resources explicitly since there is no resource dir hierarchy
     // (note we have to do this for both packageBin and compile tasks)
-    mappings in Compile := resourceDirMap( (javaSource in Compile).value, "config"),
-    mappings in Compile ++= resourceDirMap( (javaSource in Compile).value, "images"),
-    mappings in Compile ++= patternMap( (javaSource in Compile).value, "gov/nasa/worldwind/util", "*.properties"),
+    Compile / mappings := resourceDirMap( (Compile / javaSource).value, "config"),
+    Compile / mappings ++= resourceDirMap( (Compile / javaSource).value, "images"),
+    Compile / mappings ++= patternMap( (Compile / javaSource).value, "gov/nasa/worldwind/util", "*.properties"),
 
     // we need to copy resources into target/classes in case we run this with a directory based classpath
-    compile in Compile := {
-      val clsDir = (classDirectory in Compile).value
-      val fileMappings = (mappings in Compile).value 
+    Compile / compile := {
+      val clsDir = (Compile / classDirectory).value
+      val fileMappings = (Compile / mappings).value 
       IO.copy(fileMappings.map( e => (e._1, clsDir / e._2)))
 
-      (compile in Compile).value
+      (Compile / compile).value
     },
 
     publishTo := sonatypePublishToBundle.value,
@@ -93,13 +93,13 @@ lazy val wwjRoot = Project("wwjRoot", file(".")).
     // updated (which will not require client build changes) but until then there is only the
     // choice between a bad and a worse option. 
     // The 2.3.2 artifacts do not work with contemporary Java versions (>12)
-    packageBin in Compile := assembly.value
+    Compile / packageBin := assembly.value
   )
 
-addArtifact(artifact in (Compile, assembly), assembly)
+addArtifact(Compile / assembly / artifact, assembly)
 
 //---- publishing meta data
-pomExtra in Global := {
+Global / pomExtra := {
   <url>https://github.com/pcmehlitz/WorldWindJava-pcm.git</url>
     <licenses>
       <license>
