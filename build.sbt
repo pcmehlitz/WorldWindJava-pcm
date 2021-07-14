@@ -9,6 +9,8 @@ import scala.sys.process.Process
 
 ThisBuild / shellPrompt := { state => "[" + Project.extract(state).currentRef.project + "]> " }
 
+ThisBuild / versionScheme := Some("early-semver")
+
 //--- external dependencies
 // since there still is no 2.4 release of jogl-all and gluegen on Maven Central we have to turn
 // this for now into a unmanaged dependency. We will reverse this once they become available
